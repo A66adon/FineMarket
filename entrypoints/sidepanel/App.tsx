@@ -479,9 +479,18 @@ export function App() {
   }
 
   async function handleCopyDiagnostics() {
+    const tabs = await browser.tabs.query({});
     const diagnostics = {
       version: extensionVersion,
       userAgent: navigator.userAgent,
+      cardmarketTabs: tabs
+        .filter((tab) => (tab.url ?? '').includes('cardmarket.com'))
+        .map((tab) => ({
+          url: tab.url,
+          title: tab.title,
+          active: tab.active,
+          status: tab.status,
+        })),
       settings,
       deck: deck
         ? {
