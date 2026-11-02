@@ -509,7 +509,11 @@ function parseCountry(root: Element): string {
   const el =
     root.querySelector('[aria-label^="Item location:"]') ??
     root.querySelector('[data-bs-original-title^="Item location:"]') ??
-    root.querySelector('[data-bs-title^="Item location:"]');
+    root.querySelector('[data-bs-title^="Item location:"]') ??
+    // The fetched metaproduct HTML uses a plain title attribute here, while
+    // the rendered page exposes the same value through aria-label.
+    root.querySelector('[title^="Item location:"]') ??
+    root.querySelector('[alt^="Item location:"]');
   return normalizeWhitespace(tooltipText(el) ?? '').replace(
     /^Item location:\s*/i,
     '',
