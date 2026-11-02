@@ -1,4 +1,5 @@
 import { parseCardmarketPage } from '../src/shared/cardmarket';
+import { parseRetryAfterMs } from '../src/shared/http';
 import type { ContentMessage } from '../src/shared/messages';
 import type { ApplyItem, Want } from '../src/shared/types';
 
@@ -44,21 +45,36 @@ export default defineContentScript({
 async function fetchAndParseWant(
   url: string,
   want: Want,
-): Promise<{ ok: boolean; page?: unknown; error?: string }> {
+): Promise<{
+  ok: boolean;
+  page?: unknown;
+  error?: string;
+  status?: number;
+  retryAfterMs?: number;
+}> {
   const response = await fetch(url, {
     credentials: 'include',
     headers: { Accept: 'text/html,application/xhtml+xml' },
   });
 
   if (!response.ok) {
+    const retryAfterMs = parseRetryAfterMs(
+      response.headers.get('Retry-After'),
+    );
     console.warn(
       '[DeckCart] Cardmarket fetch failed',
       response.status,
+      retryAfterMs != null ? `retry in ${retryAfterMs}ms` : '',
       url,
     );
     return {
       ok: false,
-      error: `Cardmarket returned HTTP ${response.status}. Reload the tab and complete any security check.`,
+      status: response.status,
+      ...(retryAfterMs != null ? { retryAfterMs } : {}),
+      error:
+        response.status === 429
+          ? 'Cardmarket is rate-limiting DeckCart. Wait a minute and retry.'
+          : `Cardmarket returned HTTP ${response.status}. Reload the tab and complete any security check.`,
     };
   }
 

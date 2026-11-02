@@ -41,6 +41,8 @@ export interface FetchWantResponse {
   ok: boolean;
   page?: ParsedCardmarketPage;
   error?: string;
+  status?: number;
+  retryAfterMs?: number;
 }
 
 export interface FetchShippingResponse {

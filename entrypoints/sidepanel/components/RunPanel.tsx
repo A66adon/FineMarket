@@ -82,7 +82,7 @@ export function RunPanel({
       <div className="run-meta">
         <span className="num">{wantCount}</span> cards to price
         <span className="receipt-dot">·</span>
-        100 cards usually takes a few minutes
+        Cardmarket rate limits apply; expect several minutes
       </div>
       {wantCount === 0 ? (
         <p className="form-error">
