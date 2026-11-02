@@ -66,6 +66,8 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [applyResult, setApplyResult] = useState<ApplyResult | null>(null);
+  const [runWants, setRunWants] = useState<Want[]>([]);
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [urlInput, setUrlInput] = useState('');
   const [urlError, setUrlError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -93,6 +95,7 @@ export function App() {
       null,
     [result, selectedPlanId],
   );
+  const extensionVersion = browser.runtime.getManifest().version;
 
   const invalidatePlans = useCallback(() => {
     setResult(null);
@@ -349,6 +352,7 @@ export function App() {
       }
 
       const plans = sortPlans(response.result.plans);
+      setRunWants(response.wants);
       setResult(response.result);
       setSelectedPlanId(plans[0]?.id ?? null);
       setFocusedOrderId(plans[0]?.orders[0]?.seller.id ?? null);
@@ -466,11 +470,78 @@ export function App() {
   function handleRunAgain() {
     setApplyResult(null);
     setResult(null);
+    setRunWants([]);
     setSelectedPlanId(null);
     setFocusedOrderId(null);
     setError(null);
     setWarning(null);
     setPhase('deck');
+  }
+
+  async function handleCopyDiagnostics() {
+    const diagnostics = {
+      version: extensionVersion,
+      userAgent: navigator.userAgent,
+      settings,
+      deck: deck
+        ? {
+            name: deck.name,
+            publicId: deck.publicId,
+            internalId: deck.internalId,
+            format: deck.format,
+            cards: deck.cards.length,
+          }
+        : null,
+      collection: collection
+        ? {
+            source: collection.source,
+            totalOwned: collection.totalOwned,
+            entries: collection.entries.length,
+          }
+        : null,
+      cardmarketTab: context?.cardmarketTab ?? null,
+      activeTab: context?.activeTab ?? null,
+      wants: (runWants.length > 0 ? runWants : baseWants).map((want) => ({
+        name: want.name,
+        quantity: want.quantity,
+        finish: want.finish,
+        allowAnyPrinting: want.allowAnyPrinting,
+        allowAnyFinish: want.allowAnyFinish,
+        ownedQuantity: want.ownedQuantity,
+        missingReason: want.missingReason ?? null,
+        offers: want.offers.length,
+        firstOffer:
+          want.offers[0] != null
+            ? {
+                seller: want.offers[0].seller.name,
+                country: want.offers[0].seller.country,
+                priceCents: want.offers[0].priceCents,
+                condition: want.offers[0].condition,
+                finish: want.offers[0].finish,
+              }
+            : null,
+      })),
+      plans: result?.plans.map((plan) => ({
+        variant: plan.variant,
+        totalCents: plan.totals.totalCents,
+        orders: plan.orders.length,
+        missing: plan.missing.map((line) => ({
+          name: line.name,
+          reason: line.reason,
+          shortfall: line.shortfall,
+        })),
+      })),
+      error,
+      warning,
+    };
+
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(diagnostics, null, 2));
+      setCopyState('copied');
+    } catch {
+      setCopyState('failed');
+    }
+    window.setTimeout(() => setCopyState('idle'), 2200);
   }
 
   const showDeck =
@@ -616,7 +687,22 @@ export function App() {
           />
         ) : null}
 
-        <footer className="app-footer">{UNOFFICIAL_DISCLAIMER}</footer>
+        <footer className="app-footer">
+          <span>
+            {UNOFFICIAL_DISCLAIMER} · v{extensionVersion}
+          </span>
+          <button
+            type="button"
+            className="footer-link"
+            onClick={() => void handleCopyDiagnostics()}
+          >
+            {copyState === 'copied'
+              ? 'Copied'
+              : copyState === 'failed'
+                ? 'Copy failed'
+                : 'Copy diagnostics'}
+          </button>
+        </footer>
       </main>
 
       {selectedPlan && phase === 'plans' ? (

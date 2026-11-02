@@ -6,7 +6,7 @@ export default defineConfig({
     name: 'DeckCart',
     description:
       'Turn a Moxfield deck into a cheaper Cardmarket cart, postage included.',
-    version: '0.1.0',
+    version: '0.1.1',
     minimum_chrome_version: '114',
     permissions: ['storage', 'scripting', 'activeTab'],
     host_permissions: [
