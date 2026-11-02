@@ -166,6 +166,29 @@ export function parseCardmarketOffers(
   return offers;
 }
 
+/**
+ * The logged-out page shows an item-count badge. Logged-in pages may replace
+ * the badge with an amount input. Prefer the explicit badge, then the input's
+ * max (available stock), then its current value.
+ */
+function parseStock(row: Element): number | null {
+  const badge = positiveInt(
+    row.querySelector('.col-offer .amount-container .item-count')?.textContent,
+  );
+  if (badge != null) return badge;
+
+  const input = row.querySelector<HTMLInputElement>(
+    '.col-offer .actions-container input[name="amount"], ' +
+      '.col-offer .actions-container input[type="number"], ' +
+      '.col-offer input[name="amount"]',
+  );
+  if (!input) return null;
+
+  const max = positiveInt(input.getAttribute('max'));
+  if (max != null) return max;
+  return positiveInt(input.value);
+}
+
 function parseHtml(html: string): Document {
   if (typeof html !== 'string' || html.trim() === '') {
     throw new Error('Cardmarket HTML is empty');
@@ -208,9 +231,7 @@ function parseOfferRow(
   const priceCents = tryParseEuroToCents(priceEl?.textContent);
   if (priceCents == null) return null;
 
-  const stock = positiveInt(
-    row.querySelector('.col-offer .amount-container .item-count')?.textContent,
-  );
+  const stock = parseStock(row);
   if (stock == null) return null;
 
   const isFoil = hasFlag(productAttributes, 'Foil');

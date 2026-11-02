@@ -336,6 +336,33 @@ describe('parseCardmarketPage: metaproduct fixture', () => {
   });
 });
 
+describe('parseCardmarketPage: logged-in quantity fallback', () => {
+  it('uses the amount input max when the item-count badge is absent', () => {
+    const doc = new DOMParser().parseFromString(productHtml, 'text/html');
+    const row = doc.querySelector('.article-row');
+    if (!row) throw new Error('Fixture has no article row');
+
+    row.querySelector('.col-offer .amount-container')?.remove();
+    const actions = row.querySelector('.col-offer .actions-container');
+    if (!actions) throw new Error('Fixture has no actions container');
+
+    const input = doc.createElement('input');
+    input.type = 'number';
+    input.name = 'amount';
+    input.value = '1';
+    input.setAttribute('max', '7');
+    actions.append(input);
+
+    const page = parseCardmarketPage(
+      doc.documentElement.outerHTML,
+      PRODUCT_BASE,
+      makeWant({ finish: 'foil', allowAnyFinish: false }),
+    );
+
+    expect(page.offers[0]?.stock).toBe(7);
+  });
+});
+
 describe('parseCardmarketPage: price, ETA, and malformed rows', () => {
   it('parses dot-thousands and comma decimals as cents', () => {
     const html = syntheticPage(
