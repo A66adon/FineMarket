@@ -37,9 +37,9 @@ unpacked build; your settings live in the browser profile, not in the folder.
 3. Click **Find cheapest cart** on the Moxfield page, or open DeckCart from the
    toolbar.
 4. Pick the boards, basic lands, mode and collection behavior.
-5. Click **Find cheapest cart** in the side panel. The run reads Cardmarket
-   pages one at a time; 100 cards can take several minutes because Cardmarket
-   rate-limits page reads.
+5. Click **Find cheapest cart** in the side panel. Cheapest-playable reads one
+   Cardmarket page per card, usually about 3–4 seconds each; pages cached from a
+   recent run are instant.
 6. Review the plan and the seller stacks.
 7. Click **Review and apply**, confirm, and apply.
 8. Open the Cardmarket cart, check the final postage and fees, and pay there.

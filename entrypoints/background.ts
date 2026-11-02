@@ -22,7 +22,7 @@ import type {
 const PENDING_DECK_KEY = 'deckcart.pendingDeck';
 const SHIPPING_CACHE_KEY = 'deckcart.shippingCache.v1';
 const CARDMARKET_HOME = 'https://www.cardmarket.com/en/Magic';
-const CARDMARKET_MIN_INTERVAL_MS = 5_000;
+const CARDMARKET_MIN_INTERVAL_MS = 3_000;
 const CARDMARKET_PAGE_CACHE_TTL_MS = 10 * 60 * 1000;
 const MOXFIELD_DECK_PATTERN = /^https:\/\/(?:www\.)?moxfield\.com\/decks\/([A-Za-z0-9_-]{22})/;
 
@@ -346,7 +346,12 @@ async function withCardmarketThrottle<T>(task: () => Promise<T>): Promise<T> {
     try {
       return await task();
     } finally {
-      cardmarketNextRequestAt = Date.now() + CARDMARKET_MIN_INTERVAL_MS;
+      // A little jitter avoids a perfectly regular request pattern while
+      // keeping the average pace well above the rate that triggered 429s.
+      cardmarketNextRequestAt =
+        Date.now() +
+        CARDMARKET_MIN_INTERVAL_MS +
+        Math.floor(Math.random() * 500);
     }
   });
 

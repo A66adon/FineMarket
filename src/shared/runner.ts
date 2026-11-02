@@ -65,7 +65,6 @@ export async function runWizard(
     });
 
     updatedWants.push(await fetchWantOffers(want, options, signal));
-    await delay(220);
   }
 
   const filteredWants = updatedWants.map((want) => ({
@@ -79,13 +78,6 @@ export async function runWizard(
   }));
 
   throwIfAborted(signal);
-  onProgress?.({
-    phase: 'shipping',
-    current: 0,
-    total: 1,
-    label: 'Loading shipping methods',
-  });
-
   const shipping = new Map<string, readonly ShippingMethod[]>();
   const shippingErrors: string[] = [];
   const sellerCountries = new Set<number>();
@@ -95,17 +87,20 @@ export async function runWizard(
     }
   }
 
-  let countryIndex = 0;
-  for (const fromCountryId of sellerCountries) {
-    throwIfAborted(signal);
-    countryIndex += 1;
-    onProgress?.({
-      phase: 'shipping',
-      current: countryIndex - 1,
-      total: sellerCountries.size,
-      label: `Shipping from ${countryName(fromCountryId)}`,
-    });
+  const countryIds = Array.from(sellerCountries);
+  let countriesDone = 0;
+  onProgress?.({
+    phase: 'shipping',
+    current: 0,
+    total: Math.max(countryIds.length, 1),
+    label: 'Loading shipping methods',
+  });
 
+  // These requests go to help.cardmarket.com, not the marketplace, and are
+  // cached by country pair. Fetching a few in parallel cuts several seconds
+  // off a run without touching the Cardmarket page rate limit.
+  await mapWithConcurrency(countryIds, 4, async (fromCountryId) => {
+    throwIfAborted(signal);
     const response = await sendMessage<FetchShippingResponse>({
       type: 'FETCH_SHIPPING',
       fromCountryId,
@@ -122,7 +117,15 @@ export async function runWizard(
         `${countryName(fromCountryId)}: ${response.error ?? 'no shipping route'}`,
       );
     }
-  }
+
+    countriesDone += 1;
+    onProgress?.({
+      phase: 'shipping',
+      current: countriesDone,
+      total: countryIds.length,
+      label: `Shipping from ${countryName(fromCountryId)}`,
+    });
+  });
 
   throwIfAborted(signal);
   onProgress?.({
@@ -165,6 +168,42 @@ async function fetchWantOffers(
   signal?: AbortSignal,
 ): Promise<Want> {
   if (want.missingReason) return want;
+
+  let metaproductUrl: string | undefined;
+  if (options.mode === 'cheapest-playable') {
+    // Cheapest-playable does not need the exact printing first. Going straight
+    // to the all-printings page halves the number of Cardmarket page requests
+    // and avoids exact product URLs that redirect and lose their filters.
+    metaproductUrl =
+      want.metaproductUrl ??
+      buildMetaproductUrlFromName(want.name, options.minCondition) ??
+      undefined;
+
+    if (metaproductUrl) {
+      throwIfAborted(signal);
+      metaproductUrl = withOfferFilters(
+        metaproductUrl,
+        options.minCondition,
+      );
+      const metaproductResponse = await requestCardmarketPage(
+        { ...want, allowAnyFinish: true, allowAnyPrinting: true },
+        metaproductUrl,
+      );
+
+      if (
+        metaproductResponse.ok &&
+        metaproductResponse.page &&
+        metaproductResponse.page.offers.length > 0
+      ) {
+        return {
+          ...want,
+          offers: metaproductResponse.page.offers,
+          metaproductUrl,
+        };
+      }
+    }
+  }
+
   if (want.exactProductId == null) {
     return { ...want, missingReason: 'No Cardmarket product id' };
   }
@@ -173,20 +212,7 @@ async function fetchWantOffers(
     want.productUrl ?? buildProductUrl(want.exactProductId, options.minCondition),
     options.minCondition,
   );
-
-  const productResponse = await sendMessage<FetchWantResponse>({
-    type: 'FETCH_CARDMARKET_WANT',
-    want,
-    url: productUrl,
-  });
-
-  if (productResponse.rateLimited || productResponse.status === 429) {
-    throw new CardmarketRateLimitError(
-      productResponse.error ??
-        'Cardmarket is rate-limiting DeckCart. Wait before running again.',
-      productResponse.retryAfterMs,
-    );
-  }
+  const productResponse = await requestCardmarketPage(want, productUrl);
 
   if (!productResponse.ok || !productResponse.page) {
     return {
@@ -195,60 +221,39 @@ async function fetchWantOffers(
     };
   }
 
-  let page = productResponse.page;
-  let metaproductUrl = page.metaproductUrl;
-
-  if (options.mode === 'cheapest-playable' && !metaproductUrl) {
-    // Some exact product IDs redirect to a different printing, and those
-    // redirects can lose the product's Show Versions link. Falling back to the
-    // name-based /Cards/ URL keeps cheapest-playable from being stuck on a
-    // printing that has no English offers.
-    metaproductUrl = buildMetaproductUrlFromName(
-      want.name,
-      options.minCondition,
-    ) ?? undefined;
-  }
-
-  if (options.mode === 'cheapest-playable' && metaproductUrl) {
-    throwIfAborted(signal);
-    const filteredMetaproductUrl = withOfferFilters(
-      metaproductUrl,
-      options.minCondition,
-    );
-    const metaproductResponse = await sendMessage<FetchWantResponse>({
-      type: 'FETCH_CARDMARKET_WANT',
-      want: { ...want, allowAnyFinish: true, allowAnyPrinting: true },
-      url: filteredMetaproductUrl,
-    });
-    if (metaproductResponse.rateLimited || metaproductResponse.status === 429) {
-      throw new CardmarketRateLimitError(
-        metaproductResponse.error ??
-          'Cardmarket is rate-limiting DeckCart. Wait before running again.',
-        metaproductResponse.retryAfterMs,
-      );
-    }
-    if (
-      metaproductResponse.ok &&
-      metaproductResponse.page &&
-      (metaproductResponse.page.offers.length > 0 || page.offers.length === 0)
-    ) {
-      page = metaproductResponse.page;
-      metaproductUrl = filteredMetaproductUrl;
-    }
-  }
-
   const updated: Want = {
     ...want,
-    offers: page.offers,
+    offers: productResponse.page.offers,
   };
   if (metaproductUrl) updated.metaproductUrl = metaproductUrl;
-  if (page.offers.length === 0) {
+  if (productResponse.page.offers.length === 0) {
     updated.missingReason =
       options.mode === 'cheapest-playable'
         ? `No English offers at ${options.minCondition} or better for any printing`
         : `No English offers for this exact printing (try Cheapest playable)`;
   }
   return updated;
+}
+
+async function requestCardmarketPage(
+  want: Want,
+  url: string,
+): Promise<FetchWantResponse> {
+  const response = await sendMessage<FetchWantResponse>({
+    type: 'FETCH_CARDMARKET_WANT',
+    want,
+    url,
+  });
+
+  if (response.rateLimited || response.status === 429) {
+    throw new CardmarketRateLimitError(
+      response.error ??
+        'Cardmarket is rate-limiting DeckCart. Wait before running again.',
+      response.retryAfterMs,
+    );
+  }
+
+  return response;
 }
 
 async function sendMessage<T>(message: ExtensionMessage): Promise<T> {
@@ -259,6 +264,25 @@ function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) {
     throw new DOMException('Wizard cancelled', 'AbortError');
   }
+}
+
+async function mapWithConcurrency<T>(
+  items: readonly T[],
+  limit: number,
+  task: (item: T) => Promise<void>,
+): Promise<void> {
+  let nextIndex = 0;
+  const workerCount = Math.min(Math.max(limit, 1), items.length);
+  const workers = Array.from({ length: workerCount }, async () => {
+    while (true) {
+      const index = nextIndex;
+      nextIndex += 1;
+      const item = items[index];
+      if (item === undefined) return;
+      await task(item);
+    }
+  });
+  await Promise.all(workers);
 }
 
 function delay(ms: number): Promise<void> {

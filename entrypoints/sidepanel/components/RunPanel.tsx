@@ -49,8 +49,9 @@ export function RunPanel({
           <div>
             <h2 id="run-heading">Reading the market</h2>
             <p className="section-copy">
-              Cardmarket pages are read slowly on purpose to avoid its rate
-              limit. A full run can take several minutes.
+              Cardmarket pages are paced to avoid its rate limit. Cheapest
+              playable reads one page per card — usually about 3–4 seconds
+              each.
             </p>
           </div>
           <button type="button" className="button button-quiet" onClick={onStop}>
@@ -123,7 +124,7 @@ export function RunPanel({
       <div className="run-meta">
         <span className="num">{wantCount}</span> cards to price
         <span className="receipt-dot">·</span>
-        Cardmarket rate limits apply; expect several minutes
+        About 3–4 seconds per card; cached pages are instant
       </div>
       {cooldownRemaining > 0 ? (
         <Notice tone="warning">

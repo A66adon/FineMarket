@@ -101,8 +101,8 @@ describe('runWizard rate limiting', () => {
   });
 });
 
-describe('runWizard cheapest-playable fallback', () => {
-  it('tries the name-based all-printings page when the product has no link', async () => {
+describe('runWizard cheapest-playable requests', () => {
+  it('fetches the all-printings page without fetching the exact product first', async () => {
     const calls: string[] = [];
     const target = {
       ...want(),
@@ -110,14 +110,6 @@ describe('runWizard cheapest-playable fallback', () => {
       exactProductId: 792623,
       productUrl:
         'https://www.cardmarket.com/en/Magic/Products?idProduct=792623',
-    };
-    const productPage = {
-      pageKind: 'product' as const,
-      name: 'Phyrexian Walker',
-      productId: 792623,
-      offers: [],
-      hasMore: false,
-      cloudflare: false,
     };
     const metaproductPage = {
       pageKind: 'metaproduct' as const,
@@ -136,10 +128,63 @@ describe('runWizard cheapest-playable fallback', () => {
         };
         if (msg.type === 'FETCH_CARDMARKET_WANT') {
           calls.push(msg.url ?? '');
+          return { ok: true, page: metaproductPage } as never;
+        }
+        if (msg.type === 'FETCH_SHIPPING') {
+          return { ok: true, methods: [shippingMethod()] } as never;
+        }
+        return { ok: false } as never;
+      },
+    );
+
+    const result = await runWizard({ wants: [target], options: options() });
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toContain('/en/Magic/Cards/Phyrexian-Walker');
+    expect(calls[0]).toContain('language=1');
+    expect(calls[0]).toContain('minCondition=3');
+    expect(result.wants[0]?.offers).toHaveLength(1);
+    expect(result.result.plans.length).toBeGreaterThan(0);
+  });
+
+  it('falls back to the exact product when the all-printings page is empty', async () => {
+    const calls: string[] = [];
+    const target = {
+      ...want(),
+      name: 'Phyrexian Walker',
+      exactProductId: 792623,
+      productUrl:
+        'https://www.cardmarket.com/en/Magic/Products?idProduct=792623',
+    };
+    const emptyMetaproductPage = {
+      pageKind: 'metaproduct' as const,
+      name: 'Phyrexian Walker',
+      metaproductId: 203332,
+      offers: [],
+      hasMore: false,
+      cloudflare: false,
+    };
+    const productPage = {
+      pageKind: 'product' as const,
+      name: 'Phyrexian Walker',
+      productId: 792623,
+      offers: [offer()],
+      hasMore: false,
+      cloudflare: false,
+    };
+
+    vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockImplementation(
+      async (message) => {
+        const msg = message as unknown as {
+          type: string;
+          url?: string;
+        };
+        if (msg.type === 'FETCH_CARDMARKET_WANT') {
+          calls.push(msg.url ?? '');
           return {
             ok: true,
             page: msg.url?.includes('/Magic/Cards/')
-              ? metaproductPage
+              ? emptyMetaproductPage
               : productPage,
           } as never;
         }
@@ -152,15 +197,9 @@ describe('runWizard cheapest-playable fallback', () => {
 
     const result = await runWizard({ wants: [target], options: options() });
 
-    expect(
-      calls.some(
-        (url) =>
-          url.includes('/en/Magic/Cards/Phyrexian-Walker') &&
-          url.includes('language=1') &&
-          url.includes('minCondition=3'),
-      ),
-    ).toBe(true);
+    expect(calls).toHaveLength(2);
+    expect(calls[0]).toContain('/en/Magic/Cards/Phyrexian-Walker');
+    expect(calls[1]).toContain('idProduct=792623');
     expect(result.wants[0]?.offers).toHaveLength(1);
-    expect(result.result.plans.length).toBeGreaterThan(0);
   });
 });
