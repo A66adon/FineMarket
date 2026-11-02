@@ -143,12 +143,12 @@ export function parseCardmarketOffers(
   const context = parsePageContext(doc, baseUrl);
   const fallbackExpansion = headerExpansion(doc);
   const rows = Array.from(doc.querySelectorAll(ROW_SELECTOR)).filter((row) =>
-    /^articleRow\d+$/.test(row.id),
+    /^articleRow\d+/.test(row.id),
   );
   if (rows.length === 0) {
     rows.push(
       ...Array.from(doc.querySelectorAll(ROW_FALLBACK_SELECTOR)).filter((row) =>
-        /^articleRow\d+$/.test(row.id),
+        /^articleRow\d+/.test(row.id),
       ),
     );
   }
@@ -216,14 +216,16 @@ function parseOfferRow(
   context: PageContext,
   fallbackExpansion: string | undefined,
 ): Offer | null {
-  const articleMatch = /^articleRow(\d+)$/.exec(row.id);
+  const articleMatch = /^articleRow(\d+)/.exec(row.id);
   if (!articleMatch?.[1]) return null;
 
   const sellerEl = row.querySelector('.seller-name');
   if (!sellerEl) return null;
 
   const sellerLink = sellerEl.querySelector('a[href*="/Users/"]');
-  const sellerName = normalizeWhitespace(sellerLink?.textContent ?? '');
+  const sellerName = normalizeWhitespace(
+    sellerLink?.textContent ?? sellerEl.querySelector('a')?.textContent ?? '',
+  );
   if (!sellerName) return null;
 
   const productAttributes =

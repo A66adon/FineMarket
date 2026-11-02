@@ -467,6 +467,21 @@ describe('parseCardmarketPage: price, ETA, and malformed rows', () => {
     expect(page.offers[0]?.etaDays).toBe(5);
   });
 
+  it('accepts an article row id with a layout suffix', () => {
+    const html = syntheticPage(
+      [syntheticRow({ id: 77, price: '1,00 €', foil: true })],
+      { productId: 123 },
+    ).replace('articleRow77', 'articleRow77-mobile');
+
+    const page = parseCardmarketPage(
+      html,
+      'https://www.cardmarket.com/en/Magic/Products?idProduct=123',
+      makeWant(),
+    );
+
+    expect(page.offers[0]?.id).toBe('77');
+  });
+
   it('skips malformed rows instead of throwing', () => {
     const html = syntheticPage(
       [

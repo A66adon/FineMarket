@@ -110,17 +110,23 @@ async function fetchAndParseWant(
       `(articleRow ids in fetched HTML: ${rawRows})`,
     );
 
-    if (!loggedEmptyRowDebug) {
+    if (!loggedEmptyRowDebug && rawRows > 0) {
       loggedEmptyRowDebug = true;
       const doc = new DOMParser().parseFromString(html, 'text/html');
-      const row = doc.querySelector(
-        '.article-table .table-body > .row[id^="articleRow"], [id^="articleRow"]',
+      const rows = Array.from(
+        doc.querySelectorAll(
+          '.article-table .table-body > .row[id^="articleRow"], [id^="articleRow"]',
+        ),
       );
+      const row = rows[0];
       const attributes = row?.querySelector('.product-attributes') ?? row;
       console.warn('[DeckCart] First offer row debug', {
+        rawRows,
+        parsedRows: rows.length,
         id: row?.id,
         seller: row?.querySelector('.seller-name a')?.textContent?.trim(),
         condition: row?.querySelector('.article-condition')?.textContent?.trim(),
+        conditionClass: row?.querySelector('.article-condition')?.className,
         labels: attributes
           ? Array.from(
               attributes.querySelectorAll(
@@ -144,6 +150,7 @@ async function fetchAndParseWant(
         input: row
           ?.querySelector('.col-offer input, .actions-container input')
           ?.outerHTML.slice(0, 220),
+        rowHtml: row?.outerHTML.slice(0, 1200),
       });
     }
   }
