@@ -255,6 +255,7 @@ test('runs a mocked deck to a plan and dry-run apply', async ({
   await expect(
     page.locator('.plan-lane').filter({ hasText: 'Cheapest' }).first(),
   ).toBeVisible();
+  expect(await page.locator('.plan-lane').count()).toBe(3);
   await expect(
     page.getByRole('heading', { name: 'Seller stacks' }),
   ).toBeVisible();
