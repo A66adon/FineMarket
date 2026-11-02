@@ -21,6 +21,16 @@ export interface WizardProgress {
   label: string;
 }
 
+export class CardmarketRateLimitError extends Error {
+  readonly retryAfterMs?: number;
+
+  constructor(message: string, retryAfterMs?: number) {
+    super(message);
+    this.name = 'CardmarketRateLimitError';
+    this.retryAfterMs = retryAfterMs;
+  }
+}
+
 export interface RunWizardOptions {
   wants: Want[];
   options: DeckOptions;
@@ -166,6 +176,14 @@ async function fetchWantOffers(
     url: productUrl,
   });
 
+  if (productResponse.rateLimited || productResponse.status === 429) {
+    throw new CardmarketRateLimitError(
+      productResponse.error ??
+        'Cardmarket is rate-limiting DeckCart. Wait before running again.',
+      productResponse.retryAfterMs,
+    );
+  }
+
   if (!productResponse.ok || !productResponse.page) {
     return {
       ...want,
@@ -187,6 +205,13 @@ async function fetchWantOffers(
       want: { ...want, allowAnyFinish: true, allowAnyPrinting: true },
       url: filteredMetaproductUrl,
     });
+    if (metaproductResponse.rateLimited || metaproductResponse.status === 429) {
+      throw new CardmarketRateLimitError(
+        metaproductResponse.error ??
+          'Cardmarket is rate-limiting DeckCart. Wait before running again.',
+        metaproductResponse.retryAfterMs,
+      );
+    }
     if (metaproductResponse.ok && metaproductResponse.page) {
       page = metaproductResponse.page;
       metaproductUrl = filteredMetaproductUrl;

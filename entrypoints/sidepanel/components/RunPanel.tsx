@@ -1,25 +1,47 @@
+import { useEffect, useState } from 'react';
 import { Play, RefreshCw, Square } from 'lucide-react';
 import type { WizardProgress } from '@/src/shared/runner';
 import { ProgressBar } from './ProgressBar';
-import { ErrorNotice } from './ErrorNotice';
+import { ErrorNotice, Notice } from './ErrorNotice';
 
 export function RunPanel({
   phase,
   wantCount,
   progress,
   error,
+  cooldownUntil,
   onRun,
   onStop,
   onRetry,
 }: {
-  phase: 'deck' | 'running' | 'plans' | 'applying' | 'done' | 'error' | 'empty' | 'boot' | 'loading-deck';
+  phase:
+    | 'deck'
+    | 'running'
+    | 'plans'
+    | 'applying'
+    | 'done'
+    | 'error'
+    | 'empty'
+    | 'boot'
+    | 'loading-deck';
   wantCount: number;
   progress: WizardProgress | null;
   error: string | null;
+  cooldownUntil: number;
   onRun: () => void;
   onStop: () => void;
   onRetry: () => void;
 }) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    if (cooldownUntil <= Date.now()) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [cooldownUntil]);
+
+  const cooldownRemaining = Math.max(0, cooldownUntil - now);
+
   if (phase === 'running') {
     return (
       <section className="tray run-tray" aria-labelledby="run-heading">
@@ -27,7 +49,8 @@ export function RunPanel({
           <div>
             <h2 id="run-heading">Reading the market</h2>
             <p className="section-copy">
-              Cardmarket pages are read one at a time. You can stop at any point.
+              Cardmarket pages are read slowly on purpose to avoid its rate
+              limit. A full run can take several minutes.
             </p>
           </div>
           <button type="button" className="button button-quiet" onClick={onStop}>
@@ -41,6 +64,19 @@ export function RunPanel({
   }
 
   if (phase === 'error') {
+    if (cooldownRemaining > 0) {
+      return (
+        <section className="tray run-tray" aria-labelledby="run-heading">
+          <h2 id="run-heading">Cardmarket rate-limited</h2>
+          <Notice tone="warning">
+            Cardmarket is rejecting requests from this IP. Try again in{' '}
+            <strong>{formatRemaining(cooldownRemaining)}</strong>. Repeated
+            attempts can extend the wait.
+          </Notice>
+        </section>
+      );
+    }
+
     return (
       <section className="tray run-tray" aria-labelledby="run-heading">
         <h2 id="run-heading">Run stopped</h2>
@@ -63,7 +99,12 @@ export function RunPanel({
           </p>
         </div>
         {phase === 'plans' ? (
-          <button type="button" className="button button-quiet" onClick={onRun}>
+          <button
+            type="button"
+            className="button button-quiet"
+            onClick={onRun}
+            disabled={cooldownRemaining > 0}
+          >
             <RefreshCw size={14} aria-hidden="true" />
             Run again
           </button>
@@ -72,7 +113,7 @@ export function RunPanel({
             type="button"
             className="button button-primary button-large"
             onClick={onRun}
-            disabled={wantCount === 0}
+            disabled={wantCount === 0 || cooldownRemaining > 0}
           >
             <Play size={15} aria-hidden="true" />
             Find cheapest cart
@@ -84,6 +125,13 @@ export function RunPanel({
         <span className="receipt-dot">·</span>
         Cardmarket rate limits apply; expect several minutes
       </div>
+      {cooldownRemaining > 0 ? (
+        <Notice tone="warning">
+          Cardmarket rate-limited this IP. Try again in{' '}
+          <strong>{formatRemaining(cooldownRemaining)}</strong>. Do not start
+          repeated runs; each one can extend the wait.
+        </Notice>
+      ) : null}
       {wantCount === 0 ? (
         <p className="form-error">
           No cards are left after the board, basic-land and collection filters.
@@ -91,4 +139,11 @@ export function RunPanel({
       ) : null}
     </section>
   );
+}
+
+function formatRemaining(ms: number): string {
+  const seconds = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return `${minutes}:${String(rest).padStart(2, '0')}`;
 }

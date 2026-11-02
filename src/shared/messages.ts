@@ -43,6 +43,7 @@ export interface FetchWantResponse {
   error?: string;
   status?: number;
   retryAfterMs?: number;
+  rateLimited?: boolean;
 }
 
 export interface FetchShippingResponse {

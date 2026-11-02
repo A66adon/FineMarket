@@ -22,10 +22,8 @@ import type {
 const PENDING_DECK_KEY = 'deckcart.pendingDeck';
 const SHIPPING_CACHE_KEY = 'deckcart.shippingCache.v1';
 const CARDMARKET_HOME = 'https://www.cardmarket.com/en/Magic';
-const CARDMARKET_MIN_INTERVAL_MS = 3_500;
+const CARDMARKET_MIN_INTERVAL_MS = 5_000;
 const CARDMARKET_PAGE_CACHE_TTL_MS = 10 * 60 * 1000;
-const CARDMARKET_DEFAULT_RATE_LIMIT_WAIT_MS = 60_000;
-const CARDMARKET_MAX_ATTEMPTS = 4;
 const MOXFIELD_DECK_PATTERN = /^https:\/\/(?:www\.)?moxfield\.com\/decks\/([A-Za-z0-9_-]{22})/;
 
 interface ShippingCacheEntry {
@@ -304,47 +302,36 @@ async function fetchCardmarketWant(
     want,
   };
 
-  for (let attempt = 1; attempt <= CARDMARKET_MAX_ATTEMPTS; attempt += 1) {
-    const page = await withCardmarketThrottle(() =>
-      sendCardmarketMessage<FetchWantResponse>(tabId, message),
-    );
+  const page = await withCardmarketThrottle(() =>
+    sendCardmarketMessage<FetchWantResponse>(tabId, message),
+  );
 
-    if (!page) {
-      return {
-        ok: false,
-        error:
-          'Cardmarket is not responding. Reload the Cardmarket tab, complete any security check, and try again.',
-      };
-    }
+  if (!page) {
+    return {
+      ok: false,
+      error:
+        'Cardmarket is not responding. Reload the Cardmarket tab, complete any security check, and try again.',
+    };
+  }
 
-    if (page.ok) {
-      cardmarketPageCache.set(url, { page, fetchedAt: Date.now() });
-      return page;
-    }
-
-    if (page.status === 429) {
-      const waitMs =
-        Math.max(
-          page.retryAfterMs ?? CARDMARKET_DEFAULT_RATE_LIMIT_WAIT_MS,
-          CARDMARKET_DEFAULT_RATE_LIMIT_WAIT_MS,
-        ) +
-        (attempt - 1) * 15_000;
-      console.info(
-        `[DeckCart] Cardmarket rate limit; waiting ${waitMs}ms before retry ${attempt}/${CARDMARKET_MAX_ATTEMPTS}`,
-      );
-      await sleep(waitMs);
-      continue;
-    }
-
+  if (page.ok) {
+    cardmarketPageCache.set(url, { page, fetchedAt: Date.now() });
     return page;
   }
 
-  return {
-    ok: false,
-    status: 429,
-    error:
-      'Cardmarket kept rate-limiting DeckCart. Wait a few minutes, then run again.',
-  };
+  if (page.status === 429) {
+    console.info(
+      '[DeckCart] Cardmarket rate limit; stopping the run instead of hammering',
+    );
+    return {
+      ...page,
+      rateLimited: true,
+      error:
+        'Cardmarket is rate-limiting this IP. Wait 15–30 minutes, then run again.',
+    };
+  }
+
+  return page;
 }
 
 async function withCardmarketThrottle<T>(task: () => Promise<T>): Promise<T> {

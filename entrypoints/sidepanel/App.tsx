@@ -10,7 +10,11 @@ import { loadStoredCollection, clearStoredCollection, saveStoredCollection } fro
 import { createCollectionIndex, parseMoxfieldCollectionCsv } from '@/src/shared/moxfield-collection';
 import { boardOptions, buildWants, extractMoxfieldPublicId } from '@/src/shared/moxfield';
 import { loadSettings, saveSettings } from '@/src/shared/settings';
-import { runWizard, type WizardProgress } from '@/src/shared/runner';
+import {
+  CardmarketRateLimitError,
+  runWizard,
+  type WizardProgress,
+} from '@/src/shared/runner';
 import { planToCartItems, sortPlans } from '@/src/shared/plan';
 import type { FetchCollectionResponse, FetchDeckResponse, ExtensionMessage } from '@/src/shared/messages';
 import type {
@@ -63,6 +67,7 @@ export function App() {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [focusedOrderId, setFocusedOrderId] = useState<string | null>(null);
   const [progress, setProgress] = useState<WizardProgress | null>(null);
+  const [cooldownUntil, setCooldownUntil] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const [applyResult, setApplyResult] = useState<ApplyResult | null>(null);
@@ -322,6 +327,15 @@ export function App() {
   async function handleRun() {
     if (!deck || baseWants.length === 0) return;
 
+    if (cooldownUntil > Date.now()) {
+      setError(
+        'Cardmarket is still rate-limiting this IP. Wait for the countdown to finish before running again.',
+      );
+      setPhase('error');
+      return;
+    }
+
+    setCooldownUntil(0);
     const controller = new AbortController();
     abortRef.current = controller;
     setSettingsOpen(false);
@@ -352,6 +366,7 @@ export function App() {
       }
 
       const plans = sortPlans(response.result.plans);
+      setCooldownUntil(0);
       setRunWants(response.wants);
       setResult(response.result);
       setSelectedPlanId(plans[0]?.id ?? null);
@@ -369,6 +384,12 @@ export function App() {
     } catch (runError) {
       if (runError instanceof DOMException && runError.name === 'AbortError') {
         setPhase('deck');
+      } else if (runError instanceof CardmarketRateLimitError) {
+        const until =
+          Date.now() + Math.max(runError.retryAfterMs ?? 0, 15 * 60 * 1000);
+        setCooldownUntil(until);
+        setError(runError.message);
+        setPhase('error');
       } else {
         setError(runError instanceof Error ? runError.message : String(runError));
         setPhase('error');
@@ -611,6 +632,7 @@ export function App() {
             wantCount={wantedCards}
             progress={progress}
             error={error}
+            cooldownUntil={cooldownUntil}
             onRun={() => void handleRun()}
             onStop={handleStop}
             onRetry={handleRetry}
