@@ -115,6 +115,7 @@ test('background reads collection ownership through the open Moxfield tab', asyn
       }),
     );
 
+    let refreshed = false;
     const realFetch = window.fetch.bind(window);
     window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url =
@@ -123,7 +124,19 @@ test('background reads collection ownership through the open Moxfield tab', asyn
           : input instanceof URL
             ? input.toString()
             : input.url;
+
+      if (url.includes('/v1/account/token/refresh')) {
+        refreshed = true;
+        return new Response(
+          JSON.stringify({ access_token: 'refreshed-token' }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+
       if (url.includes('/v1/collections/search')) {
+        if (!refreshed) {
+          return new Response('', { status: 401 });
+        }
         return new Response(
           JSON.stringify({
             data: [
@@ -193,6 +206,14 @@ test('background reads collection ownership through the open Moxfield tab', asyn
     quantity: 2,
     productId: 844281,
   });
+
+  const storedToken = await page.evaluate(() => {
+    const state = JSON.parse(localStorage.getItem('state') ?? '{}') as {
+      user?: { accessToken?: string };
+    };
+    return state.user?.accessToken;
+  });
+  expect(storedToken).toBe('refreshed-token');
 });
 
 test('Cardmarket content script parses offers and posts the cart request', async ({

@@ -601,29 +601,86 @@ async function pageFetchCollection(
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const state = JSON.parse(localStorage.getItem('state') ?? '{}') as any;
-    const token = state?.user?.accessToken as string | undefined;
     const userId = state?.user?.userId as string | undefined;
-    const headers: Record<string, string> = { Accept: 'application/json' };
-    if (token) headers.Authorization = `Bearer ${token}`;
-    if (userId) headers['X-Session-User'] = userId;
+    let token = state?.user?.accessToken as string | undefined;
 
-    for (const id of ids) {
-      const url = new URL('https://api2.moxfield.com/v1/collections/search');
-      url.searchParams.set('deckId', id);
-      url.searchParams.set('game', 'paper');
-      url.searchParams.set('pageNumber', '1');
-      url.searchParams.set('pageSize', '500');
-      url.searchParams.set('sortType', 'cardName');
-      url.searchParams.set('sortDirection', 'ascending');
+    const requestHeaders = (): Record<string, string> => {
+      const headers: Record<string, string> = { Accept: 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+      if (userId) headers['X-Session-User'] = userId;
+      return headers;
+    };
 
-      const response = await fetch(url.toString(), {
-        credentials: 'include',
-        headers,
-      });
-      if (response.ok) {
-        return { ok: true, status: response.status, data: await response.json() };
+    const refreshToken = async (): Promise<boolean> => {
+      if (!userId) return false;
+      try {
+        const response = await fetch(
+          'https://api2.moxfield.com/v1/account/token/refresh',
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              ...(userId ? { 'X-Session-User': userId } : {}),
+            },
+            body: JSON.stringify({ userId, isAppLogin: false }),
+          },
+        );
+        if (!response.ok) return false;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data = (await response.json()) as any;
+        if (typeof data?.access_token !== 'string' || !data.access_token) {
+          return false;
+        }
+        token = data.access_token;
+        try {
+          state.user.accessToken = data.access_token;
+          state.user.expiration = data.expiration;
+          localStorage.setItem('state', JSON.stringify(state));
+        } catch {
+          // The page store may be read-only in some sessions; the in-memory
+          // token above is enough for this request.
+        }
+        return true;
+      } catch {
+        return false;
       }
-      if (response.status !== 400 && response.status !== 404) {
+    };
+
+    let refreshed = false;
+    for (const id of ids) {
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const url = new URL('https://api2.moxfield.com/v1/collections/search');
+        url.searchParams.set('deckId', id);
+        url.searchParams.set('game', 'paper');
+        url.searchParams.set('pageNumber', '1');
+        url.searchParams.set('pageSize', '500');
+        url.searchParams.set('sortType', 'cardName');
+        url.searchParams.set('sortDirection', 'ascending');
+
+        const response = await fetch(url.toString(), {
+          credentials: 'include',
+          headers: requestHeaders(),
+        });
+        if (response.ok) {
+          return {
+            ok: true,
+            status: response.status,
+            data: await response.json(),
+          };
+        }
+        if (response.status === 401 && !refreshed) {
+          refreshed = true;
+          if (await refreshToken()) continue;
+          return {
+            ok: false,
+            status: 401,
+            error:
+              'Moxfield session expired. Reload Moxfield and retry, or import a collection CSV.',
+          };
+        }
+        if (response.status === 400 || response.status === 404) break;
         return {
           ok: false,
           status: response.status,
