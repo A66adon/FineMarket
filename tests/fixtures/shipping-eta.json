@@ -1,0 +1,40 @@
+{
+  "source": "https://help.cardmarket.com/en/ShippingCosts (SSR widget times[])",
+  "pairs": [
+    {
+      "fromCountry": "France",
+      "toCountry": "Germany",
+      "days": 7,
+      "fromCountryId": 12,
+      "toCountryId": 7
+    },
+    {
+      "fromCountry": "Germany",
+      "toCountry": "Germany",
+      "days": 5,
+      "fromCountryId": 7,
+      "toCountryId": 7
+    },
+    {
+      "fromCountry": "Germany",
+      "toCountry": "Switzerland",
+      "days": 7,
+      "fromCountryId": 7,
+      "toCountryId": 4
+    },
+    {
+      "fromCountry": "Germany",
+      "toCountry": "United Kingdom",
+      "days": 8,
+      "fromCountryId": 7,
+      "toCountryId": 13
+    },
+    {
+      "fromCountry": "United Kingdom",
+      "toCountry": "Germany",
+      "days": 9,
+      "fromCountryId": 13,
+      "toCountryId": 7
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Virtual Delivery",
+    "isTracked": true,
+    "maxValue": "10.000,00 €",
+    "maxWeight": 0,
+    "stampPrice": "0,00 €",
+    "price": "0,00 €",
+    "isLetter": false,
+    "isVirtual": true
+  }
+]

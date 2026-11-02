@@ -1,0 +1,352 @@
+[
+  {
+    "name": "Int. Standard Letter",
+    "isTracked": false,
+    "maxValue": "25,00 €",
+    "maxWeight": 100,
+    "stampPrice": "£3.60",
+    "price": "4,97 €",
+    "isLetter": true,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Standard Large Letter",
+    "isTracked": false,
+    "maxValue": "25,00 €",
+    "maxWeight": 100,
+    "stampPrice": "£3.80",
+    "price": "5,22 €",
+    "isLetter": true,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Standard Small Parcel (Online)",
+    "isTracked": false,
+    "maxValue": "25,00 €",
+    "maxWeight": 250,
+    "stampPrice": "£6.60",
+    "price": "9,19 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Standard Small Parcel (Online)",
+    "isTracked": false,
+    "maxValue": "25,00 €",
+    "maxWeight": 500,
+    "stampPrice": "£8.80",
+    "price": "11,91 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Standard Small Parcel (Online)",
+    "isTracked": false,
+    "maxValue": "25,00 €",
+    "maxWeight": 1000,
+    "stampPrice": "£10.95",
+    "price": "14,56 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Standard Small Parcel (Online)",
+    "isTracked": false,
+    "maxValue": "25,00 €",
+    "maxWeight": 2000,
+    "stampPrice": "£12.00",
+    "price": "15,86 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Standard Small Parcel (Online)",
+    "isTracked": true,
+    "maxValue": "100,00 €",
+    "maxWeight": 250,
+    "stampPrice": "£15.50",
+    "price": "20,18 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Standard Small Parcel (Online)",
+    "isTracked": true,
+    "maxValue": "100,00 €",
+    "maxWeight": 500,
+    "stampPrice": "£21.65",
+    "price": "27,77 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 100£)",
+    "isTracked": true,
+    "maxValue": "100,00 €",
+    "maxWeight": 1000,
+    "stampPrice": "£24.70",
+    "price": "31,54 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Standard Small Parcel (Online)",
+    "isTracked": true,
+    "maxValue": "100,00 €",
+    "maxWeight": 1000,
+    "stampPrice": "£28.90",
+    "price": "36,72 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 100£)",
+    "isTracked": true,
+    "maxValue": "100,00 €",
+    "maxWeight": 2000,
+    "stampPrice": "£26.05",
+    "price": "33,20 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Standard Small Parcel (Online)",
+    "isTracked": true,
+    "maxValue": "100,00 €",
+    "maxWeight": 2000,
+    "stampPrice": "£36.30",
+    "price": "45,86 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 100£)",
+    "isTracked": true,
+    "maxValue": "100,00 €",
+    "maxWeight": 5000,
+    "stampPrice": "£44.70",
+    "price": "56,23 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 100£)",
+    "isTracked": true,
+    "maxValue": "100,00 €",
+    "maxWeight": 10000,
+    "stampPrice": "£58.00",
+    "price": "72,65 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Tracked Small Parcel (Online) (250£ compensation)",
+    "isTracked": true,
+    "maxValue": "250,00 €",
+    "maxWeight": 250,
+    "stampPrice": "£15.60",
+    "price": "20,30 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Tracked Small Parcel (Online) (250£ compensation)",
+    "isTracked": true,
+    "maxValue": "250,00 €",
+    "maxWeight": 500,
+    "stampPrice": "£16.40",
+    "price": "21,29 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Tracked Small Parcel (Online) (250£ compensation)",
+    "isTracked": true,
+    "maxValue": "250,00 €",
+    "maxWeight": 1000,
+    "stampPrice": "£18.25",
+    "price": "23,57 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Int. Tracked Small Parcel (Online) (250£ compensation)",
+    "isTracked": true,
+    "maxValue": "250,00 €",
+    "maxWeight": 2000,
+    "stampPrice": "£19.45",
+    "price": "25,06 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 750£)",
+    "isTracked": true,
+    "maxValue": "500,00 €",
+    "maxWeight": 1000,
+    "stampPrice": "£31.70",
+    "price": "40,18 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 750£)",
+    "isTracked": true,
+    "maxValue": "500,00 €",
+    "maxWeight": 2000,
+    "stampPrice": "£33.05",
+    "price": "41,85 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 750£)",
+    "isTracked": true,
+    "maxValue": "500,00 €",
+    "maxWeight": 5000,
+    "stampPrice": "£51.70",
+    "price": "64,87 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 750£)",
+    "isTracked": true,
+    "maxValue": "500,00 €",
+    "maxWeight": 10000,
+    "stampPrice": "£65.00",
+    "price": "81,29 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 1000£)",
+    "isTracked": true,
+    "maxValue": "1.000,00 €",
+    "maxWeight": 1000,
+    "stampPrice": "£54.70",
+    "price": "68,58 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 1000£)",
+    "isTracked": true,
+    "maxValue": "1.000,00 €",
+    "maxWeight": 2000,
+    "stampPrice": "£56.05",
+    "price": "70,24 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 1000£)",
+    "isTracked": true,
+    "maxValue": "1.000,00 €",
+    "maxWeight": 5000,
+    "stampPrice": "£74.70",
+    "price": "93,27 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 1000£)",
+    "isTracked": true,
+    "maxValue": "1.000,00 €",
+    "maxWeight": 10000,
+    "stampPrice": "£88.00",
+    "price": "109,69 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 2500£)",
+    "isTracked": true,
+    "maxValue": "2.500,00 €",
+    "maxWeight": 1000,
+    "stampPrice": "£89.70",
+    "price": "111,79 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 2500£)",
+    "isTracked": true,
+    "maxValue": "2.500,00 €",
+    "maxWeight": 2000,
+    "stampPrice": "£91.05",
+    "price": "113,46 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 2500£)",
+    "isTracked": true,
+    "maxValue": "2.500,00 €",
+    "maxWeight": 5000,
+    "stampPrice": "£109.70",
+    "price": "136,48 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "Insured Parcel (Parcelforce Globalpriority Europe 2500£)",
+    "isTracked": true,
+    "maxValue": "2.500,00 €",
+    "maxWeight": 10000,
+    "stampPrice": "£123.00",
+    "price": "152,90 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance",
+    "isTracked": true,
+    "maxValue": "2.500,00 €",
+    "maxWeight": 20000,
+    "stampPrice": "£149.00",
+    "price": "185,00 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance",
+    "isTracked": true,
+    "maxValue": "5.000,00 €",
+    "maxWeight": 20000,
+    "stampPrice": "£149.00",
+    "price": "185,00 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance",
+    "isTracked": true,
+    "maxValue": "10.000,00 €",
+    "maxWeight": 20000,
+    "stampPrice": "£149.00",
+    "price": "185,00 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance",
+    "isTracked": true,
+    "maxValue": "20.000,00 €",
+    "maxWeight": 20000,
+    "stampPrice": "£149.00",
+    "price": "185,00 €",
+    "isLetter": false,
+    "isVirtual": false
+  },
+  {
+    "name": "SHIPPING COST ESTIMATION for Courier Parcel with Full Insurance",
+    "isTracked": true,
+    "maxValue": "150.000,00 €",
+    "maxWeight": 20000,
+    "stampPrice": "£149.00",
+    "price": "185,00 €",
+    "isLetter": false,
+    "isVirtual": false
+  }
+]
