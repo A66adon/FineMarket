@@ -353,6 +353,41 @@ describe('parseCardmarketPage: logged-in row markup', () => {
   });
 });
 
+describe('parseCardmarketPage: localized language labels', () => {
+  it('accepts the German label for English', () => {
+    const doc = new DOMParser().parseFromString(productHtml, 'text/html');
+    const row = doc.querySelector('.article-row');
+    const condition = row?.querySelector('.article-condition');
+    const languageIcon = condition?.nextElementSibling;
+    languageIcon?.setAttribute('aria-label', 'Englisch');
+    languageIcon?.setAttribute('data-bs-original-title', 'Englisch');
+
+    const page = parseCardmarketPage(
+      doc.documentElement.outerHTML,
+      PRODUCT_BASE,
+      makeWant({ finish: 'foil', allowAnyFinish: false }),
+    );
+
+    expect(page.offers.length).toBe(50);
+  });
+
+  it('trusts the English URL filter when no language label is exposed', () => {
+    const doc = new DOMParser().parseFromString(productHtml, 'text/html');
+    for (const row of doc.querySelectorAll('.article-row')) {
+      const condition = row.querySelector('.article-condition');
+      condition?.nextElementSibling?.remove();
+    }
+
+    const page = parseCardmarketPage(
+      doc.documentElement.outerHTML,
+      PRODUCT_BASE,
+      makeWant({ finish: 'foil', allowAnyFinish: false }),
+    );
+
+    expect(page.offers.length).toBe(50);
+  });
+});
+
 describe('parseCardmarketPage: logged-in quantity fallback', () => {
   it('uses the amount input max when the item-count badge is absent', () => {
     const doc = new DOMParser().parseFromString(productHtml, 'text/html');

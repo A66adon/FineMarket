@@ -3,6 +3,8 @@ import { parseRetryAfterMs } from '../src/shared/http';
 import type { ContentMessage } from '../src/shared/messages';
 import type { ApplyItem, Want } from '../src/shared/types';
 
+let loggedEmptyRowDebug = false;
+
 export default defineContentScript({
   matches: ['https://www.cardmarket.com/*'],
   runAt: 'document_idle',
@@ -107,6 +109,43 @@ async function fetchAndParseWant(
       url,
       `(articleRow ids in fetched HTML: ${rawRows})`,
     );
+
+    if (!loggedEmptyRowDebug) {
+      loggedEmptyRowDebug = true;
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const row = doc.querySelector(
+        '.article-table .table-body > .row[id^="articleRow"], [id^="articleRow"]',
+      );
+      const attributes = row?.querySelector('.product-attributes') ?? row;
+      console.warn('[DeckCart] First offer row debug', {
+        id: row?.id,
+        seller: row?.querySelector('.seller-name a')?.textContent?.trim(),
+        condition: row?.querySelector('.article-condition')?.textContent?.trim(),
+        labels: attributes
+          ? Array.from(
+              attributes.querySelectorAll(
+                '[aria-label], [data-bs-original-title], [data-bs-title]',
+              ),
+            )
+              .map(
+                (element) =>
+                  element.getAttribute('aria-label') ??
+                  element.getAttribute('data-bs-original-title') ??
+                  element.getAttribute('data-bs-title'),
+              )
+              .filter(Boolean)
+              .slice(0, 8)
+          : [],
+        price: row?.querySelector('.col-offer .price-container')?.textContent?.trim(),
+        itemCount: row
+          ?.querySelector('.col-offer .amount-container .item-count')
+          ?.textContent?.trim(),
+        amount: row?.querySelector('.col-offer .amount-container')?.textContent?.trim(),
+        input: row
+          ?.querySelector('.col-offer input, .actions-container input')
+          ?.outerHTML.slice(0, 220),
+      });
+    }
   }
 
   // An empty offer list is a valid result, not a transport error. The runner

@@ -5,7 +5,7 @@ import {
 } from './constants';
 import { countryIdFromName } from './countries';
 import { tryParseEuroToCents } from './money';
-import type { Condition, Finish, Offer, Seller, Want } from './types';
+import type { Cents, Condition, Finish, Offer, Seller, Want } from './types';
 
 export interface ParsedCardmarketPage {
   pageKind: 'product' | 'metaproduct' | 'unknown';
@@ -179,22 +179,24 @@ export function parseCardmarketOffers(
  * the badge with an amount input. Prefer the explicit badge, then the input's
  * max (available stock), then its current value.
  */
-function parseStock(row: Element): number | null {
-  const badge = positiveInt(
-    row.querySelector('.col-offer .amount-container .item-count')?.textContent,
-  );
+function parseStock(row: Element): number {
+  const amountContainer = row.querySelector('.col-offer .amount-container');
+  const badge =
+    positiveInt(
+      amountContainer?.querySelector('.item-count')?.textContent,
+    ) ?? positiveInt(amountContainer?.textContent);
   if (badge != null) return badge;
 
   const input = row.querySelector<HTMLInputElement>(
-    '.col-offer .actions-container input[name="amount"], ' +
-      '.col-offer .actions-container input[type="number"], ' +
-      '.col-offer input[name="amount"]',
+    '.col-offer .actions-container input, .col-offer input',
   );
-  if (!input) return null;
+  if (!input) return 1;
 
-  const max = positiveInt(input.getAttribute('max'));
-  if (max != null) return max;
-  return positiveInt(input.value);
+  return (
+    positiveInt(input.getAttribute('max')) ??
+    positiveInt(input.value) ??
+    1
+  );
 }
 
 function parseHtml(html: string): Document {
@@ -224,8 +226,8 @@ function parseOfferRow(
   const sellerName = normalizeWhitespace(sellerLink?.textContent ?? '');
   if (!sellerName) return null;
 
-  const productAttributes = row.querySelector('.col-product .product-attributes');
-  if (!productAttributes) return null;
+  const productAttributes =
+    row.querySelector('.col-product .product-attributes') ?? row;
 
   const condition = parseCondition(row);
   if (!condition) return null;
@@ -233,14 +235,13 @@ function parseOfferRow(
   const language = parseLanguage(productAttributes);
   if (language !== 'EN') return null;
 
-  const priceEl = lastMatch(
-    row.querySelectorAll('.col-offer .price-container span.text-nowrap'),
-  );
-  const priceCents = tryParseEuroToCents(priceEl?.textContent);
+  const priceEl =
+    lastMatch(row.querySelectorAll('.col-offer .price-container span.text-nowrap')) ??
+    row.querySelector('.col-offer .price-container');
+  const priceCents = parsePriceCents(priceEl?.textContent);
   if (priceCents == null) return null;
 
   const stock = parseStock(row);
-  if (stock == null) return null;
 
   const isFoil = hasFlag(productAttributes, 'Foil');
   const isSigned = hasFlag(productAttributes, 'Signed');
@@ -350,14 +351,31 @@ function parseCondition(row: Element): Condition | null {
   const code = normalizeWhitespace(
     el.querySelector('.badge')?.textContent ?? el.textContent ?? '',
   ).toUpperCase();
-  return Object.prototype.hasOwnProperty.call(CONDITION_RANK, code)
-    ? (code as Condition)
-    : null;
+
+  if (Object.prototype.hasOwnProperty.call(CONDITION_RANK, code)) {
+    return code as Condition;
+  }
+
+  const fullLabels: Record<string, Condition> = {
+    MINT: 'MT',
+    'NEAR MINT': 'NM',
+    EXCELLENT: 'EX',
+    GOOD: 'GD',
+    'LIGHT PLAYED': 'LP',
+    PLAYED: 'PL',
+    POOR: 'PO',
+  };
+  if (fullLabels[code]) return fullLabels[code];
+  if (code) return null;
+
+  const classMatch = /condition-(mt|nm|ex|gd|lp|pl|po)\b/i.exec(el.className);
+  const classCode = classMatch?.[1]?.toUpperCase();
+  return classCode ? (classCode as Condition) : null;
 }
 
-function parseLanguage(productAttributes: Element): string | null {
+function parseLanguage(productAttributes: Element): string {
   const normalize = (label: string): string =>
-    /^english$/i.test(label) ? 'EN' : label;
+    /^english$|^englisch$/i.test(label) ? 'EN' : label;
 
   // The language icon is the element directly after the condition badge on
   // both logged-out and logged-in pages. Prefer that relationship so an
@@ -370,32 +388,61 @@ function parseLanguage(productAttributes: Element): string | null {
     return normalize(conditionSiblingLabel);
   }
 
-  for (const icon of productAttributes.querySelectorAll('.icon[aria-label]')) {
+  for (const icon of productAttributes.querySelectorAll(
+    '[aria-label], [data-bs-original-title], [data-bs-title]',
+  )) {
     if (icon.classList.contains('expansion-symbol')) continue;
     const label = tooltipText(icon);
     if (!label || !LANGUAGE_LABELS.has(label)) continue;
     return normalize(label);
   }
-  return null;
+
+  // The request URLs set language=1. If the markup does not expose a language
+  // label at all, trust the server-side English filter instead of dropping
+  // every row.
+  return 'EN';
 }
 
 const LANGUAGE_LABELS = new Set([
   'English',
+  'Englisch',
   'French',
+  'Französisch',
   'German',
+  'Deutsch',
   'Spanish',
+  'Spanisch',
   'Italian',
+  'Italienisch',
   'Simplified Chinese',
+  'Chinesisch (vereinfacht)',
   'Japanese',
+  'Japanisch',
   'Portuguese',
+  'Portugiesisch',
   'Russian',
+  'Russisch',
   'Korean',
+  'Koreanisch',
   'Traditional Chinese',
+  'Chinesisch (traditionell)',
   'Dutch',
+  'Niederländisch',
   'Polish',
+  'Polnisch',
   'Czech',
+  'Tschechisch',
   'Hungarian',
+  'Ungarisch',
 ]);
+
+function parsePriceCents(raw: string | null | undefined): Cents | null {
+  const direct = tryParseEuroToCents(raw);
+  if (direct != null) return direct;
+  if (!raw) return null;
+  const match = /([0-9][0-9.,]*)\s*€/.exec(raw);
+  return match?.[1] ? tryParseEuroToCents(`${match[1]} €`) : null;
+}
 
 const FLAG_LABELS = new Set([
   'Foil',
