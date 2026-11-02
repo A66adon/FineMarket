@@ -3,7 +3,7 @@ const DECK_PATH = /\/decks\/([A-Za-z0-9_-]{22})(?:[/?#]|$)/;
 export default defineContentScript({
   matches: ['https://moxfield.com/decks/*', 'https://www.moxfield.com/decks/*'],
   runAt: 'document_idle',
-  main() {
+  main(ctx) {
     console.info('[DeckCart] Moxfield content script ready');
 
     ensureButton();
@@ -13,8 +13,33 @@ export default defineContentScript({
       subtree: true,
     });
     window.addEventListener('popstate', ensureButton);
+
+    ctx.onInvalidated(() => {
+      observer.disconnect();
+      window.removeEventListener('popstate', ensureButton);
+      document.getElementById('deckcart-moxfield-host')?.remove();
+    });
   },
 });
+
+function getRuntime(): {
+  sendMessage: (message: unknown) => Promise<unknown>;
+} | null {
+  const globals = globalThis as unknown as {
+    browser?: { runtime?: { id?: string; sendMessage?: unknown } };
+    chrome?: { runtime?: { id?: string; sendMessage?: unknown } };
+  };
+  const runtime =
+    globals.browser?.runtime?.id != null
+      ? globals.browser.runtime
+      : globals.chrome?.runtime?.id != null
+        ? globals.chrome.runtime
+        : null;
+  if (!runtime || typeof runtime.sendMessage !== 'function') return null;
+  return runtime as {
+    sendMessage: (message: unknown) => Promise<unknown>;
+  };
+}
 
 function ensureButton(): void {
   if (document.getElementById('deckcart-moxfield-host')) return;
@@ -80,9 +105,19 @@ function ensureButton(): void {
   button.addEventListener('click', () => {
     const currentId = DECK_PATH.exec(location.pathname)?.[1];
     if (!currentId) return;
+
+    const runtime = getRuntime();
+    if (!runtime) {
+      button.textContent = 'Reload Moxfield and try again';
+      window.setTimeout(() => {
+        button.textContent = 'Find cheapest Cardmarket cart';
+      }, 2200);
+      return;
+    }
+
     button.disabled = true;
     button.textContent = 'Opening DeckCart…';
-    void browser.runtime
+    void runtime
       .sendMessage({ type: 'START_FROM_MOXFIELD', publicId: currentId })
       .catch(() => {
         button.textContent = 'Reload the page and try again';
