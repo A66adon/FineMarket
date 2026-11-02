@@ -496,6 +496,30 @@ h3 {
   pointer-events: none;
 }
 
+.source-steps {
+  margin: 16px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.source-steps li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.source-steps .num {
+  color: var(--orange-dark);
+  font-size: 9.5px;
+  font-weight: 740;
+  letter-spacing: 0.04em;
+}
+
 .source-footer {
   display: flex;
   align-items: center;

@@ -96,6 +96,21 @@ export function DeckSource({
 
       {error ? <p className="form-error">{error}</p> : null}
 
+      <ol className="source-steps">
+        <li>
+          <span className="num">01</span>
+          Read the open deck and your board choices.
+        </li>
+        <li>
+          <span className="num">02</span>
+          Price English, EX-or-better offers with postage.
+        </li>
+        <li>
+          <span className="num">03</span>
+          Review a plan before touching your cart.
+        </li>
+      </ol>
+
       <div className="source-footer">
         <button type="button" className="button button-quiet" onClick={onOpenMoxfield}>
           Open Moxfield
