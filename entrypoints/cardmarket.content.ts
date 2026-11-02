@@ -51,6 +51,11 @@ async function fetchAndParseWant(
   });
 
   if (!response.ok) {
+    console.warn(
+      '[DeckCart] Cardmarket fetch failed',
+      response.status,
+      url,
+    );
     return {
       ok: false,
       error: `Cardmarket returned HTTP ${response.status}. Reload the tab and complete any security check.`,
@@ -62,6 +67,7 @@ async function fetchAndParseWant(
   const page = parseCardmarketPage(html, finalUrl, want);
 
   if (page.cloudflare) {
+    console.warn('[DeckCart] Cardmarket security check for', url);
     return {
       ok: false,
       error:
@@ -70,11 +76,16 @@ async function fetchAndParseWant(
   }
 
   if (page.pageKind === 'unknown') {
+    console.warn('[DeckCart] Cardmarket page kind unknown for', url);
     return {
       ok: false,
       error:
         'Cardmarket returned an unexpected page. Reload the tab and complete any security check.',
     };
+  }
+
+  if (page.offers.length === 0) {
+    console.warn('[DeckCart] No eligible offers parsed for', url);
   }
 
   // An empty offer list is a valid result, not a transport error. The runner
@@ -132,6 +143,11 @@ async function addToCart(
 
   const body = await response.text();
   if (!response.ok) {
+    console.warn(
+      '[DeckCart] Cardmarket cart request failed',
+      response.status,
+      body.slice(0, 240),
+    );
     return {
       ok: false,
       added: 0,
