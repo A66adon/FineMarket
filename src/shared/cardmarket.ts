@@ -73,13 +73,27 @@ export function buildMetaproductUrlFromProductHtml(
   if (typeof DOMParser === 'undefined') return null;
 
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  const offersLink = doc.querySelector(
-    '#tabContent-info .info-list-container a[href*="/Cards/"]:not([href$="/Versions"])',
-  );
+  // Cardmarket moved this block around in the 2026 layout. Prefer the info
+  // panel, but keep a whole-page fallback for pages where that container is
+  // gone or renamed.
+  const offersLink =
+    doc.querySelector(
+      '#tabContent-info .info-list-container a[href*="/Cards/"]:not([href$="/Versions"])',
+    ) ??
+    doc.querySelector(
+      '.info-list-container a[href*="/Cards/"]:not([href$="/Versions"])',
+    ) ??
+    doc.querySelector(
+      'a[href*="/Magic/Cards/"]:not([href$="/Versions"])',
+    );
   const versionsLink =
     doc.querySelector(
       '#tabContent-info .info-list-container a[href*="/Cards/"][href$="/Versions"]',
-    ) ?? doc.querySelector('a[href*="/Cards/"][href$="/Versions"]');
+    ) ??
+    doc.querySelector(
+      '.info-list-container a[href*="/Cards/"][href$="/Versions"]',
+    ) ??
+    doc.querySelector('a[href*="/Cards/"][href$="/Versions"]');
 
   const href = offersLink?.getAttribute('href') ?? versionsLink?.getAttribute('href');
   if (!href) return null;
@@ -92,7 +106,14 @@ export function buildMetaproductUrlFromProductHtml(
   }
 
   if (target.protocol !== 'http:' && target.protocol !== 'https:') return null;
-  if (!target.pathname.includes('/Cards/')) return null;
+  const pathSegments = target.pathname.split('/').filter(Boolean);
+  if (
+    !target.pathname.includes('/Cards/') ||
+    pathSegments.length < 4 ||
+    pathSegments[2] !== 'Cards'
+  ) {
+    return null;
+  }
 
   if (/\/Versions\/?$/i.test(target.pathname)) {
     target.pathname = target.pathname.replace(/\/Versions\/?$/i, '');
@@ -101,6 +122,32 @@ export function buildMetaproductUrlFromProductHtml(
   }
 
   return withOfferFilters(target.toString());
+}
+
+/**
+ * Build the "all versions" URL from a card name. Product pages do not always
+ * expose a Show Versions link (especially after a product redirect), so this
+ * gives the cheapest-playable mode a reliable fallback. Cardmarket's slug
+ * removes apostrophes and folds accents: "Lim-Dûl's Vault" -> "Lim-Duls-Vault".
+ */
+export function buildMetaproductUrlFromName(
+  name: string,
+  minCondition: Condition = 'EX',
+): string | null {
+  const frontFace = name.split('//')[0]?.trim() ?? '';
+  const slug = frontFace
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/['\u2019]/g, '')
+    .replace(/&/g, ' and ')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  if (!slug) return null;
+  return withOfferFilters(
+    `${CARDMARKET_BASE}/en/Magic/Cards/${slug}`,
+    minCondition,
+  );
 }
 
 /**

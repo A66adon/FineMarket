@@ -1,4 +1,8 @@
-import { buildProductUrl, withOfferFilters } from './cardmarket';
+import {
+  buildMetaproductUrlFromName,
+  buildProductUrl,
+  withOfferFilters,
+} from './cardmarket';
 import { DEFAULT_POLICY } from './constants';
 import { countryName } from './countries';
 import type {
@@ -194,6 +198,17 @@ async function fetchWantOffers(
   let page = productResponse.page;
   let metaproductUrl = page.metaproductUrl;
 
+  if (options.mode === 'cheapest-playable' && !metaproductUrl) {
+    // Some exact product IDs redirect to a different printing, and those
+    // redirects can lose the product's Show Versions link. Falling back to the
+    // name-based /Cards/ URL keeps cheapest-playable from being stuck on a
+    // printing that has no English offers.
+    metaproductUrl = buildMetaproductUrlFromName(
+      want.name,
+      options.minCondition,
+    ) ?? undefined;
+  }
+
   if (options.mode === 'cheapest-playable' && metaproductUrl) {
     throwIfAborted(signal);
     const filteredMetaproductUrl = withOfferFilters(
@@ -212,7 +227,11 @@ async function fetchWantOffers(
         metaproductResponse.retryAfterMs,
       );
     }
-    if (metaproductResponse.ok && metaproductResponse.page) {
+    if (
+      metaproductResponse.ok &&
+      metaproductResponse.page &&
+      (metaproductResponse.page.offers.length > 0 || page.offers.length === 0)
+    ) {
       page = metaproductResponse.page;
       metaproductUrl = filteredMetaproductUrl;
     }
@@ -225,7 +244,9 @@ async function fetchWantOffers(
   if (metaproductUrl) updated.metaproductUrl = metaproductUrl;
   if (page.offers.length === 0) {
     updated.missingReason =
-      `No English offers at ${options.minCondition} or better`;
+      options.mode === 'cheapest-playable'
+        ? `No English offers at ${options.minCondition} or better for any printing`
+        : `No English offers for this exact printing (try Cheapest playable)`;
   }
   return updated;
 }

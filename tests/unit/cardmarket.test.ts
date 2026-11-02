@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  buildMetaproductUrlFromName,
   buildMetaproductUrlFromProductHtml,
   buildProductUrl,
   parseCardmarketPage,
@@ -229,6 +230,42 @@ describe('buildMetaproductUrlFromProductHtml', () => {
       ),
     ).toBeNull();
     expect(buildMetaproductUrlFromProductHtml('', PRODUCT_BASE)).toBeNull();
+  });
+
+  it('finds a card link outside the old info panel', () => {
+    const url = buildMetaproductUrlFromProductHtml(
+      `<!doctype html><html><body>
+        <a href="/en/Magic/Cards/Phyrexian-Walker">Show Offers</a>
+      </body></html>`,
+      PRODUCT_BASE,
+    );
+    expect(new URL(url!).pathname).toBe('/en/Magic/Cards/Phyrexian-Walker');
+  });
+});
+
+describe('buildMetaproductUrlFromName', () => {
+  it('builds the all-printings URL with the requested filters', () => {
+    const url = new URL(buildMetaproductUrlFromName('Phyrexian Walker')!);
+    expect(url.pathname).toBe('/en/Magic/Cards/Phyrexian-Walker');
+    expect(url.searchParams.get('language')).toBe('1');
+    expect(url.searchParams.get('minCondition')).toBe('3');
+  });
+
+  it("folds accents and removes apostrophes like Cardmarket's slug", () => {
+    expect(
+      new URL(buildMetaproductUrlFromName("Lim-Dûl's Vault")!).pathname,
+    ).toBe('/en/Magic/Cards/Lim-Duls-Vault');
+    expect(
+      new URL(buildMetaproductUrlFromName('Yuriko, the Tiger\u2019s Shadow')!)
+        .pathname,
+    ).toBe('/en/Magic/Cards/Yuriko-the-Tigers-Shadow');
+  });
+
+  it('uses the front face for split cards and rejects empty names', () => {
+    expect(
+      new URL(buildMetaproductUrlFromName('Commit // Memory')!).pathname,
+    ).toBe('/en/Magic/Cards/Commit');
+    expect(buildMetaproductUrlFromName('   ')).toBeNull();
   });
 });
 

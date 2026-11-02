@@ -5,6 +5,48 @@ import type { ApplyItem, Want } from '../src/shared/types';
 
 let loggedEmptyRowDebug = false;
 
+const CARD_LANGUAGE_LABELS = new Set([
+  'English',
+  'Englisch',
+  'French',
+  'Französisch',
+  'German',
+  'Deutsch',
+  'Spanish',
+  'Spanisch',
+  'Italian',
+  'Italienisch',
+  'Simplified Chinese',
+  'Chinesisch (vereinfacht)',
+  'Japanese',
+  'Japanisch',
+  'Portuguese',
+  'Portugiesisch',
+  'Russian',
+  'Russisch',
+  'Korean',
+  'Koreanisch',
+  'Traditional Chinese',
+  'Chinesisch (traditionell)',
+  'Dutch',
+  'Niederländisch',
+  'Polish',
+  'Polnisch',
+  'Czech',
+  'Tschechisch',
+  'Hungarian',
+  'Ungarisch',
+]);
+
+function tooltipLabel(element: Element): string | null {
+  const raw =
+    element.getAttribute('aria-label') ??
+    element.getAttribute('data-bs-original-title') ??
+    element.getAttribute('data-bs-title') ??
+    element.getAttribute('title');
+  return raw?.replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim() || null;
+}
+
 export default defineContentScript({
   matches: ['https://www.cardmarket.com/*'],
   runAt: 'document_idle',
@@ -120,33 +162,57 @@ async function fetchAndParseWant(
       );
       const row = rows[0];
       const attributes = row?.querySelector('.product-attributes') ?? row;
+      const labelsFor = (root: Element | null | undefined): string[] =>
+        root
+          ? Array.from(
+              root.querySelectorAll(
+                '[aria-label], [data-bs-original-title], [data-bs-title]',
+              ),
+            )
+              .map((element) => tooltipLabel(element))
+              .filter((label): label is string => Boolean(label))
+          : [];
+      const languages: Record<string, number> = {};
+      for (const offerRow of rows) {
+        const rowAttributes =
+          offerRow.querySelector('.product-attributes') ?? offerRow;
+        const language =
+          labelsFor(rowAttributes).find((label) =>
+            CARD_LANGUAGE_LABELS.has(label),
+          ) ?? 'none';
+        languages[language] = (languages[language] ?? 0) + 1;
+      }
       console.warn('[DeckCart] First offer row debug', {
+        requestedUrl: url,
+        finalUrl,
+        pageKind: page.pageKind,
+        productId: page.productId,
+        metaproductId: page.metaproductId,
+        englishChecked: Array.from(
+          doc.querySelectorAll<HTMLInputElement>(
+            'input[name^="language["]:checked',
+          ),
+        ).map((input) => input.name),
+        minCondition: doc.querySelector<HTMLSelectElement>(
+          'select[name="minCondition"]',
+        )?.value,
         rawRows,
         parsedRows: rows.length,
+        languages,
         id: row?.id,
         seller: row?.querySelector('.seller-name a')?.textContent?.trim(),
         condition: row?.querySelector('.article-condition')?.textContent?.trim(),
         conditionClass: row?.querySelector('.article-condition')?.className,
-        labels: attributes
-          ? Array.from(
-              attributes.querySelectorAll(
-                '[aria-label], [data-bs-original-title], [data-bs-title]',
-              ),
-            )
-              .map(
-                (element) =>
-                  element.getAttribute('aria-label') ??
-                  element.getAttribute('data-bs-original-title') ??
-                  element.getAttribute('data-bs-title'),
-              )
-              .filter(Boolean)
-              .slice(0, 8)
-          : [],
-        price: row?.querySelector('.col-offer .price-container')?.textContent?.trim(),
+        labels: labelsFor(attributes).slice(0, 8),
+        price: row
+          ?.querySelector('.col-offer .price-container')
+          ?.textContent?.trim(),
         itemCount: row
           ?.querySelector('.col-offer .amount-container .item-count')
           ?.textContent?.trim(),
-        amount: row?.querySelector('.col-offer .amount-container')?.textContent?.trim(),
+        amount: row
+          ?.querySelector('.col-offer .amount-container')
+          ?.textContent?.trim(),
         input: row
           ?.querySelector('.col-offer input, .actions-container input')
           ?.outerHTML.slice(0, 220),
