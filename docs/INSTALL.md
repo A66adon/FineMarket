@@ -38,7 +38,8 @@ unpacked build; your settings live in the browser profile, not in the folder.
    toolbar.
 4. Pick the boards, basic lands, mode and collection behavior.
 5. Click **Find cheapest cart** in the side panel. The run reads Cardmarket
-   pages one at a time; 100 cards can take a few minutes.
+   pages one at a time; 100 cards can take several minutes because Cardmarket
+   rate-limits page reads.
 6. Review the plan and the seller stacks.
 7. Click **Review and apply**, confirm, and apply.
 8. Open the Cardmarket cart, check the final postage and fees, and pay there.
