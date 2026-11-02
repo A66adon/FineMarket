@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-02T09:40:00Z",
+  "title": "Design System: DeckCart",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Putty Ground",
+        "canonical": "#e8e1d4",
+        "tonalRamp": ["#2f2c26", "#4b463d", "#696154", "#877d6c", "#a69a86", "#c5b8a3", "#e8e1d4", "#f6f1e8"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper Surface",
+        "canonical": "#f8f3e9",
+        "tonalRamp": ["#3b372f", "#585247", "#756d5e", "#948977", "#b2a691", "#d5c9b4", "#f8f3e9", "#fffdf8"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1e2420",
+        "tonalRamp": ["#141815", "#1e2420", "#2c342e", "#3b453d", "#4e5a51", "#68746a", "#98a198", "#dce0d9"]
+      },
+      "orange": {
+        "role": "primary",
+        "displayName": "Safety Orange",
+        "canonical": "#e4572e",
+        "tonalRamp": ["#3d160b", "#5f2412", "#82341b", "#a54725", "#c85a30", "#e4572e", "#f29a7b", "#f8ddd2"]
+      },
+      "orange-dark": {
+        "role": "primary",
+        "displayName": "Sealed Vermilion",
+        "canonical": "#c94724",
+        "tonalRamp": ["#371009", "#551b0e", "#742715", "#93331b", "#b9401f", "#c94724", "#e9886d", "#f8ddd2"]
+      },
+      "blue": {
+        "role": "secondary",
+        "displayName": "Ledger Blue",
+        "canonical": "#1f4e79",
+        "tonalRamp": ["#0b1b2b", "#102d46", "#163f5f", "#1f4e79", "#2f6b9e", "#5f91bd", "#a8c3d8", "#dfe8ef"]
+      },
+      "green": {
+        "role": "secondary",
+        "displayName": "Sorted Green",
+        "canonical": "#2f6b4f",
+        "tonalRamp": ["#10251b", "#1a3b2b", "#235039", "#2f6b4f", "#438666", "#76a98c", "#b5d2c0", "#dfe9e2"]
+      },
+      "amber": {
+        "role": "tertiary",
+        "displayName": "Label Amber",
+        "canonical": "#8a6312",
+        "tonalRamp": ["#2b1f05", "#45320a", "#62480f", "#8a6312", "#b08528", "#d1a84b", "#e8ce93", "#f2e7c9"]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "The source-screen promise and the selected cart total."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Deck name, section headings and seller names."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Explanations and dense working copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels and rail labels."
+      },
+      "numeric": {
+        "displayName": "Numeric",
+        "purpose": "Prices, counts and ETAs; always tabular."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog-lift",
+        "value": "0 24px 70px rgba(30, 36, 32, 0.3)",
+        "purpose": "The native apply dialog only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "purpose": "State transitions on buttons, chips and the order rail."
+      }
+    ],
+    "breakpoints": [
+      { "name": "panel", "value": "360px" },
+      { "name": "wide-panel", "value": "560px" },
+      { "name": "full-tab", "value": "820px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one action that starts or applies the work.",
+      "html": "<button class=\"ds-btn-primary\">Find cheapest cart</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 8px 11px; border: 1px solid var(--orange-dark, #c94724); border-radius: 9px; background: var(--orange-dark, #c94724); color: #fff; font: 660 12.5px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background 160ms cubic-bezier(.2,.8,.2,1), transform 120ms cubic-bezier(.2,.8,.2,1); } .ds-btn-primary:hover { background: #b9401f; } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 3px solid var(--blue, #1f4e79); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: .45; cursor: not-allowed; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Secondary actions: filters, collection, stop, run again.",
+      "html": "<button class=\"ds-btn-quiet\">Filters</button>",
+      "css": ".ds-btn-quiet { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 8px 11px; border: 1px solid var(--line, #cbc2b2); border-radius: 9px; background: var(--surface-2, #efe8da); color: var(--ink, #1e2420); font: 660 12.5px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; transition: background 160ms cubic-bezier(.2,.8,.2,1); } .ds-btn-quiet:hover { background: var(--surface-3, #e5dccb); } .ds-btn-quiet:focus-visible { outline: 3px solid var(--blue, #1f4e79); outline-offset: 2px; }"
+    },
+    {
+      "name": "Selected Chip",
+      "kind": "chip",
+      "refersTo": "chip-selected",
+      "description": "A board or option that is included in the run.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"true\">Mainboard <span class=\"ds-chip-count\">99</span></button>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 7px; border: 1px solid var(--orange, #e4572e); border-radius: 7px; background: var(--orange-soft, #f8ddd2); color: var(--ink, #1e2420); font: 640 10.5px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; } .ds-chip-count { color: var(--orange-dark, #c94724); font-size: 9.5px; font-variant-numeric: tabular-nums; } .ds-chip:focus-visible { outline: 3px solid var(--blue, #1f4e79); outline-offset: 2px; }"
+    },
+    {
+      "name": "Selected Plan Lane",
+      "kind": "custom",
+      "refersTo": "plan-lane",
+      "description": "One of three landed-cost plans; a row, never a card.",
+      "html": "<button class=\"ds-plan-lane\" aria-pressed=\"true\"><span class=\"ds-plan-marker\">✓</span><span class=\"ds-plan-main\"><strong>Cheapest</strong><small>Lowest landed cost, even if it uses more sellers.</small></span><span class=\"ds-plan-total\">€11.47<small>1 order · 3 d</small></span></button>",
+      "css": ".ds-plan-lane { display: grid; grid-template-columns: 21px minmax(0,1fr) auto; gap: 2px 8px; width: 100%; padding: 10px 3px; border: 0; border-bottom: 1px solid var(--line, #cbc2b2); background: #fff7ef; text-align: left; cursor: pointer; } .ds-plan-marker { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border: 1px solid var(--orange, #e4572e); border-radius: 4px; background: var(--orange, #e4572e); color: #141815; font-size: 11px; } .ds-plan-main { display: flex; min-width: 0; flex-direction: column; gap: 1px; } .ds-plan-main strong { color: var(--ink, #1e2420); font: 720 12.5px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; } .ds-plan-main small { color: var(--muted, #62685f); font-size: 10.5px; } .ds-plan-total { display: flex; min-width: 76px; flex-direction: column; align-items: flex-end; gap: 1px; color: var(--ink, #1e2420); font: 760 14px/1.1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-variant-numeric: tabular-nums; } .ds-plan-total small { color: var(--muted, #62685f); font: 400 10px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; } .ds-plan-lane:focus-visible { outline: 3px solid var(--blue, #1f4e79); outline-offset: 2px; }"
+    },
+    {
+      "name": "Order Rail",
+      "kind": "custom",
+      "refersTo": "order-rail",
+      "description": "The signature: seller stops on an ink strip, height by card count.",
+      "html": "<div class=\"ds-rail\"><div class=\"ds-rail-head\"><span>Order rail</span><span>2 stops · €18.20</span></div><div class=\"ds-rail-track\"><button class=\"ds-rail-stop active\"><span class=\"ds-rail-line\"></span><span class=\"ds-rail-dot\"></span><span class=\"ds-rail-num\">01</span><span class=\"ds-rail-name\">alphaCa…</span></button><button class=\"ds-rail-stop\"><span class=\"ds-rail-line\"></span><span class=\"ds-rail-dot\"></span><span class=\"ds-rail-num\">02</span><span class=\"ds-rail-name\">betaCar…</span></button></div></div>",
+      "css": ".ds-rail { padding: 9px 11px 8px; border-radius: 12px; background: var(--ink, #1e2420); color: var(--surface, #f8f3e9); } .ds-rail-head { display: flex; justify-content: space-between; gap: 12px; color: rgba(248,243,233,.6); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; } .ds-rail-track { display: flex; align-items: flex-end; gap: 4px; padding-top: 6px; } .ds-rail-stop { display: flex; min-width: 40px; flex-direction: column; align-items: center; gap: 1px; padding: 2px; border: 0; background: transparent; color: rgba(248,243,233,.65); cursor: pointer; } .ds-rail-line { display: block; width: 1px; height: 20px; background: rgba(248,243,233,.36); } .ds-rail-stop.active .ds-rail-line { width: 2px; background: var(--orange, #e4572e); } .ds-rail-dot { width: 4px; height: 4px; border-radius: 1px; background: rgba(248,243,233,.55); } .ds-rail-stop.active .ds-rail-dot { background: var(--orange, #e4572e); } .ds-rail-num, .ds-rail-name { color: rgba(248,243,233,.65); font-size: 8px; } .ds-rail-stop.active .ds-rail-num, .ds-rail-stop.active .ds-rail-name { color: var(--surface, #f8f3e9); }"
+    },
+    {
+      "name": "Seller Stack",
+      "kind": "custom",
+      "refersTo": "plan-lane",
+      "description": "A seller's parcel as a hairline row with an expandable manifest.",
+      "html": "<button class=\"ds-seller-row\"><span class=\"ds-seller-index\">01</span><span class=\"ds-seller-main\"><strong>alphaCards</strong><small>Germany · Commercial · 3 d</small></span><span class=\"ds-seller-total\">€11.47<small>6 cards · postage €1.40</small></span></button>",
+      "css": ".ds-seller-row { display: grid; grid-template-columns: 22px minmax(0,1fr) auto; align-items: center; gap: 7px; width: 100%; padding: 10px 2px; border: 0; border-top: 1px solid var(--line, #cbc2b2); background: transparent; text-align: left; cursor: pointer; } .ds-seller-index { color: var(--line-strong, #a79b87); font-size: 10px; font-variant-numeric: tabular-nums; } .ds-seller-main { display: flex; min-width: 0; flex-direction: column; gap: 1px; } .ds-seller-main strong { color: var(--ink, #1e2420); font: 700 12px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; } .ds-seller-main small, .ds-seller-total small { color: var(--muted, #62685f); font-size: 9.5px; } .ds-seller-total { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; color: var(--ink, #1e2420); font: 740 12px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-variant-numeric: tabular-nums; } .ds-seller-row:hover { background: rgba(239,232,218,.55); } .ds-seller-row:focus-visible { outline: 3px solid var(--blue, #1f4e79); outline-offset: 2px; }"
+    },
+    {
+      "name": "Apply Dialog",
+      "kind": "custom",
+      "refersTo": "apply-dialog",
+      "description": "The one lifted surface; confirmation before touching the real cart.",
+      "html": "<div class=\"ds-dialog\"><h2>Apply to your real cart?</h2><p>This changes the live Cardmarket cart. It does not check out or pay.</p><label><input type=\"checkbox\" checked> I understand this changes my real cart.</label><div class=\"ds-dialog-actions\"><button class=\"ds-dialog-cancel\">Cancel</button><button class=\"ds-dialog-apply\">Apply to cart</button></div></div>",
+      "css": ".ds-dialog { width: 460px; max-width: calc(100vw - 28px); padding: 17px; border: 1px solid var(--line-strong, #a79b87); border-radius: 16px; background: var(--surface, #f8f3e9); color: var(--ink, #1e2420); box-shadow: 0 24px 70px rgba(30,36,32,.3); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; } .ds-dialog h2 { margin: 0 0 4px; font-size: 18px; font-weight: 770; letter-spacing: -.025em; } .ds-dialog p { margin: 0 0 12px; color: var(--muted, #62685f); font-size: 12.5px; line-height: 1.5; } .ds-dialog label { display: flex; gap: 8px; align-items: flex-start; padding: 10px 0; border-top: 1px solid var(--line, #cbc2b2); font-size: 11.5px; font-weight: 680; } .ds-dialog input { accent-color: var(--orange, #e4572e); } .ds-dialog-actions { display: flex; justify-content: flex-end; gap: 7px; margin-top: 8px; } .ds-dialog-cancel, .ds-dialog-apply { padding: 8px 11px; border-radius: 9px; font: 660 12.5px/1.2 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; cursor: pointer; } .ds-dialog-cancel { border: 1px solid var(--line, #cbc2b2); background: var(--surface-2, #efe8da); color: var(--ink, #1e2420); } .ds-dialog-apply { border: 1px solid var(--orange-dark, #c94724); background: var(--orange-dark, #c94724); color: #fff; } .ds-dialog-apply:focus-visible, .ds-dialog-cancel:focus-visible { outline: 3px solid var(--blue, #1f4e79); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Sorting Tray",
+    "overview": "DeckCart looks like the table where a card seller sorts a deck into seller piles: warm putty paper, dark ink labels, a bright safety-orange marker, and a parcel manifest rail. It is a working surface, not a storefront. The deck arrives as a receipt; the options are a tray of labelled chips; the result is a set of seller stacks and a rail that makes the cost of every extra order visible.",
+    "keyCharacteristics": [
+      "Warm putty paper against an ink shell.",
+      "Safety-orange selection and primary action, never decoration.",
+      "Dense vertical stacking, hairline rules, no nested card grids.",
+      "One signature move: the order rail.",
+      "Every number is tabular and every estimate says it is an estimate."
+    ],
+    "rules": [
+      {
+        "name": "The Marker Rule",
+        "body": "Orange marks a choice or an action. If it is not clickable, selected, or the brand mark, it is not orange.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Means Broken Rule",
+        "body": "Red and amber only carry missing cards, failed requests or warnings. They never decorate.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Voice Rule",
+        "body": "No display face, no serif, no mono costume. Hierarchy comes from scale, weight and spacing.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Column Rule",
+        "body": "The side panel is a stack of trays, not a dashboard grid. Wide screens get breathing room, not more columns of cards.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Tray Rule",
+        "body": "A tray gets a border or a shadow, never both. Hover is a tone change, not a lift.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep orange for the selected plan, active rail stop and primary action.",
+      "Do use tabular numerals for every price, count and ETA.",
+      "Do show the collection source and the owned count before subtracting.",
+      "Do keep the order rail and seller stacks in sync.",
+      "Do label estimates as estimates; the cart is the authority."
+    ],
+    "donts": [
+      "Don't add a second accent, gradient text, glass or decorative blur.",
+      "Don't turn the seller stacks into nested cards or a dashboard grid.",
+      "Don't use a display font or monospace as a costume for prices.",
+      "Don't hide a missing card, a failed shipping route or a security check.",
+      "Don't checkout, pay or claim the final postage is known before the cart is."
+    ]
+  }
+}

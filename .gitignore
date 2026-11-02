@@ -1,6 +1,47 @@
+<<<<<<< HEAD
 # Miscellaneous
 *.class
 *.lock
+=======
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+
+# Build output
+.output/
+.wxt/
+dist/
+build/
+*.zip
+*.crx
+*.xpi
+
+# Test and coverage artifacts
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+.playwright-mcp/
+*.lcov
+
+# Impeccable working artifacts
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/build/
+.impeccable/questions/
+.impeccable/config.local.json
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs and OS files
+>>>>>>> d1f1b00 (docs: add design system, install guide and privacy notes)
 *.log
 *.pyc
 *.swp

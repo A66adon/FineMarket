@@ -16,7 +16,7 @@ Magic: The Gathering players who build decks on Moxfield and buy singles on Card
 
 ## Product Purpose
 
-Turn an open Moxfield deck into the cheapest practical Cardmarket cart, with explicit control over which boards and basic lands are included, and a clear choice between total price, number of orders, and delivery time. Success is a reviewed cart that costs less than the user's current or wizard-built cart and never silently changes language, condition, or card identity.
+Turn an open Moxfield deck into the cheapest practical Cardmarket cart, with explicit control over which boards and basic lands are included, an optional skip for cards the user already owns, and a clear choice between total price, number of orders, and delivery time. Success is a reviewed cart that costs less than the user's current or wizard-built cart and never silently changes language, condition, or card identity.
 
 ## Positioning
 
@@ -29,9 +29,10 @@ The user opens a Moxfield deck, has Cardmarket logged in in another tab, and sta
 ## Capabilities and Constraints
 
 - Chrome and Brave desktop, Manifest V3; no Firefox, Safari, or mobile extension.
-- MTG only; Moxfield links/open tabs only, no CSV.
+- MTG only; Moxfield links/open tabs only, no CSV deck import.
 - English cards only; minimum condition EX; cheapest playable is the default.
 - Board selection: mainboard, commanders, companions, sideboard, maybeboard, tokens, signature spells, attractions/stickers/contraptions/planes/schemes; basic-land toggle.
+- Optional collection ownership: read the open Moxfield deck's Collection Tracker when possible, or import a Moxfield collection CSV; skip owned copies by exact printing in "Deck as listed" and by card identity in "Cheapest playable".
 - Reads Cardmarket offers from product and metaproduct pages; uses `language=1` and `minCondition=EX` query filters; 50 rows per page.
 - Uses the public `help.cardmarket.com` shipping-cost API; exact cart total is verified after applying.
 - Applies articles through Cardmarket's internal `ShoppingCart_Add_AddArticlesFromProductPage` endpoint; no checkout, no payment automation.
@@ -55,9 +56,10 @@ Working name: DeckCart (provisional; avoid Cardmarket/Moxfield trademarks and lo
 
 1. Optimize the total the user actually pays, including postage and fees, not the sticker price of cards.
 2. Never silently substitute a different language, condition, printing, or card; show every trade-off.
-3. Make the user's constraints first-class: boards, basic lands, price, orders, delivery time.
-4. Treat the real cart as dangerous: preview, confirm, apply, verify, and never checkout.
-5. Be honest about estimates, stale offers, unsupported sellers, and failures.
+3. Respect what the user already owns, and make the collection source and its limits visible.
+4. Make the user's constraints first-class: boards, basic lands, price, orders, delivery time.
+5. Treat the real cart as dangerous: preview, confirm, apply, verify, and never checkout.
+6. Be honest about estimates, stale offers, unsupported sellers, and failures.
 
 ## Accessibility & Inclusion
 
