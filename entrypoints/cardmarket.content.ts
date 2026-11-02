@@ -69,16 +69,17 @@ async function fetchAndParseWant(
     };
   }
 
-  if (page.offers.length === 0) {
+  if (page.pageKind === 'unknown') {
     return {
       ok: false,
       error:
-        page.pageKind === 'unknown'
-          ? 'Cardmarket returned an unexpected page. The site layout may have changed.'
-          : 'No English offers at EX or better were found for this card.',
+        'Cardmarket returned an unexpected page. Reload the tab and complete any security check.',
     };
   }
 
+  // An empty offer list is a valid result, not a transport error. The runner
+  // adds the user's actual minimum condition and keeps this card in the
+  // missing list instead of hiding the reason.
   return { ok: true, page };
 }
 

@@ -132,6 +132,16 @@ export async function runWizard(
     mode: options.mode,
   });
 
+  // The optimizer only knows "no_offer". Preserve the actual fetch/parse
+  // reason so the UI can say "security check", "reload the tab", etc.
+  const wantsById = new Map(filteredWants.map((want) => [want.id, want]));
+  for (const plan of result.plans) {
+    for (const missing of plan.missing) {
+      const reason = wantsById.get(missing.wantId)?.missingReason;
+      if (reason) missing.reason = reason;
+    }
+  }
+
   return { wants: filteredWants, result, shippingErrors };
 }
 
@@ -189,7 +199,8 @@ async function fetchWantOffers(
   };
   if (metaproductUrl) updated.metaproductUrl = metaproductUrl;
   if (page.offers.length === 0) {
-    updated.missingReason = 'No English offers at EX or better';
+    updated.missingReason =
+      `No English offers at ${options.minCondition} or better`;
   }
   return updated;
 }

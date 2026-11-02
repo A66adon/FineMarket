@@ -571,6 +571,13 @@ export function App() {
             {warning ? (
               <Notice tone="warning">{warning}</Notice>
             ) : null}
+            {result.plans.every((plan) => plan.orders.length === 0) ? (
+              <Notice tone="warning">
+                No Cardmarket offers came back. Reload the Cardmarket tab,
+                complete any security check, and run again. If you use Brave
+                Shields, allow cardmarket.com for this extension.
+              </Notice>
+            ) : null}
             <PlanComparison
               plans={result.plans}
               selectedPlanId={selectedPlan?.id ?? null}

@@ -1,3 +1,4 @@
+import type { ScriptPublicPath } from 'wxt/utils/inject-script';
 import { normalizeMoxfieldDeck } from '../src/shared/moxfield';
 import { parseMoxfieldCollectionResponse } from '../src/shared/moxfield-collection';
 import { loadSettings } from '../src/shared/settings';
@@ -288,7 +289,7 @@ async function fetchCardmarketWant(
     want,
   };
 
-  const page = await sendToTabWithRetry<FetchWantResponse>(tabId, message);
+  const page = await sendCardmarketMessage<FetchWantResponse>(tabId, message);
   if (!page) {
     return {
       ok: false,
@@ -371,7 +372,7 @@ async function applyToCart(
     return { ok: false, added: 0, message: 'Could not open a Cardmarket tab' };
   }
 
-  const result = await sendToTabWithRetry<{
+  const result = await sendCardmarketMessage<{
     ok: boolean;
     added: number;
     message: string;
@@ -458,19 +459,50 @@ async function findMoxfieldTabId(publicId: string): Promise<number | undefined> 
   )?.id;
 }
 
-async function sendToTabWithRetry<T>(
+async function sendCardmarketMessage<T>(
   tabId: number,
   message: ContentMessage,
-  attempts = 4,
 ): Promise<T | null> {
-  for (let attempt = 0; attempt < attempts; attempt += 1) {
+  // Existing tabs may predate the extension installation and therefore have
+  // no content script. Retry first; then inject the built content script once.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       return (await browser.tabs.sendMessage(tabId, message)) as T;
     } catch {
       await sleep(350 + attempt * 350);
     }
   }
-  return null;
+
+  if (!(await injectCardmarketContentScript(tabId))) return null;
+  await sleep(450);
+
+  try {
+    return (await browser.tabs.sendMessage(tabId, message)) as T;
+  } catch {
+    return null;
+  }
+}
+
+async function injectCardmarketContentScript(tabId: number): Promise<boolean> {
+  const manifest = browser.runtime.getManifest();
+  const scripts = (manifest.content_scripts ?? [])
+    .filter((entry) =>
+      entry.matches?.some((pattern) => pattern.includes('cardmarket.com')),
+    )
+    .flatMap((entry) => entry.js ?? []);
+
+  if (scripts.length === 0) return false;
+
+  try {
+    await browser.scripting.executeScript({
+      target: { tabId },
+      files: scripts as ScriptPublicPath[],
+    });
+    return true;
+  } catch (error) {
+    console.info('[DeckCart] Cardmarket content-script injection failed', error);
+    return false;
+  }
 }
 
 async function executeInMoxfieldTab<T>(

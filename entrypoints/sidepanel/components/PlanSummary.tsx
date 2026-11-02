@@ -90,8 +90,8 @@ export function PlanSummary({
           <div className="notice-copy">
             <strong>{missing} cards are still missing</strong>
             <p>
-              They either have no English EX+ offer or not enough stock. Review
-              them before applying.
+              They either have no English offer at your minimum condition or
+              not enough stock. Review them before applying.
             </p>
           </div>
         </div>

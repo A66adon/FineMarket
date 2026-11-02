@@ -144,7 +144,7 @@ export function SellerStacks({
             <div className="missing-row" key={missing.wantId}>
               <span>
                 <strong>{missing.name}</strong>
-                <small>{missing.reason}</small>
+                <small>{missingReasonLabel(missing.reason)}</small>
               </span>
               <span className="num">
                 {missing.filled} / {missing.requested}
@@ -155,4 +155,19 @@ export function SellerStacks({
       ) : null}
     </section>
   );
+}
+
+function missingReasonLabel(reason: string): string {
+  switch (reason) {
+    case 'no_offer':
+      return 'No eligible offer';
+    case 'no_shipping_route':
+      return 'No shipping route from this seller';
+    case 'insufficient_stock':
+      return 'Not enough copies in stock';
+    case 'no_feasible_method':
+      return 'No usable shipping method';
+    default:
+      return reason;
+  }
 }
