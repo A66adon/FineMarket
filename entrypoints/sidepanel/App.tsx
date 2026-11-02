@@ -545,6 +545,7 @@ export function App() {
             ? {
                 seller: want.offers[0].seller.name,
                 country: want.offers[0].seller.country,
+                countryId: want.offers[0].seller.countryId,
                 priceCents: want.offers[0].priceCents,
                 condition: want.offers[0].condition,
                 finish: want.offers[0].finish,

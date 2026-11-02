@@ -314,6 +314,24 @@ describe('parseCardmarketPage: product fixture', () => {
     expect(first.url).toBe(PRODUCT_BASE);
   });
 
+  it('finds the item location when it sits outside .seller-name', () => {
+    const doc = new DOMParser().parseFromString(productHtml, 'text/html');
+    for (const icon of Array.from(
+      doc.querySelectorAll('.seller-name [aria-label^="Item location:"]'),
+    )) {
+      icon.closest('.seller-name')?.before(icon);
+    }
+
+    const parsed = parseCardmarketPage(
+      doc.documentElement.outerHTML,
+      PRODUCT_BASE,
+      makeWant({ finish: 'foil' }),
+    );
+
+    expect(parsed.offers[0]?.seller.country).toBe('Finland');
+    expect(parsed.offers[0]?.seller.countryId).toBe(11);
+  });
+
   it('exposes the metaproduct URL for the exact printing', () => {
     const parsed = new URL(page.metaproductUrl!);
     expect(parsed.pathname).toBe('/en/Magic/Cards/Command-Tower');

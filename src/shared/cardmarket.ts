@@ -305,7 +305,10 @@ function parseOfferRow(
         ? 'foil'
         : 'nonfoil';
 
-  const country = parseCountry(sellerEl);
+  // The 2026 metaproduct layout sometimes moves the item-location icon out of
+  // .seller-name (into .seller-extended or the seller column). Search the
+  // whole row so shipping still gets a country.
+  const country = parseCountry(row);
   const eta = parseEta(sellerEl);
   const isPowerseller = hasFlag(sellerEl, 'Powerseller');
   const isProfessional = hasFlag(sellerEl, 'Professional');
@@ -502,11 +505,11 @@ const FLAG_LABELS = new Set([
   'Reverse Holo',
 ]);
 
-function parseCountry(sellerEl: Element): string {
+function parseCountry(root: Element): string {
   const el =
-    sellerEl.querySelector('[aria-label^="Item location:"]') ??
-    sellerEl.querySelector('[data-bs-original-title^="Item location:"]') ??
-    sellerEl.querySelector('[data-bs-title^="Item location:"]');
+    root.querySelector('[aria-label^="Item location:"]') ??
+    root.querySelector('[data-bs-original-title^="Item location:"]') ??
+    root.querySelector('[data-bs-title^="Item location:"]');
   return normalizeWhitespace(tooltipText(el) ?? '').replace(
     /^Item location:\s*/i,
     '',
