@@ -315,7 +315,11 @@ async function fetchCardmarketWant(
   }
 
   if (page.ok) {
-    cardmarketPageCache.set(url, { page, fetchedAt: Date.now() });
+    // Never cache an empty parse. A transient layout/auth challenge should not
+    // make the same card look unpriceable for the next ten minutes.
+    if ((page.page?.offers.length ?? 0) > 0) {
+      cardmarketPageCache.set(url, { page, fetchedAt: Date.now() });
+    }
     return page;
   }
 

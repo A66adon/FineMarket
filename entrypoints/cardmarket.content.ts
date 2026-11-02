@@ -101,7 +101,12 @@ async function fetchAndParseWant(
   }
 
   if (page.offers.length === 0) {
-    console.warn('[DeckCart] No eligible offers parsed for', url);
+    const rawRows = (html.match(/id=["']articleRow/g) ?? []).length;
+    console.warn(
+      '[DeckCart] No eligible offers parsed for',
+      url,
+      `(articleRow ids in fetched HTML: ${rawRows})`,
+    );
   }
 
   // An empty offer list is a valid result, not a transport error. The runner

@@ -29,8 +29,10 @@ interface OfferEta {
   buyerDays: number | null;
 }
 
-const ROW_SELECTOR = '.article-table .table-body > .article-row';
-const ROW_FALLBACK_SELECTOR = 'div.article-row[id^="articleRow"]';
+// Logged-in Cardmarket markup can keep the `row` class without `article-row`.
+// Match every row in the article table and identify offers by the stable id.
+const ROW_SELECTOR = '.article-table .table-body > .row';
+const ROW_FALLBACK_SELECTOR = '[id^="articleRow"]';
 
 /** Build the canonical exact-printing Cardmarket URL. */
 export function buildProductUrl(
@@ -140,9 +142,15 @@ export function parseCardmarketOffers(
 ): Offer[] {
   const context = parsePageContext(doc, baseUrl);
   const fallbackExpansion = headerExpansion(doc);
-  const rows = Array.from(doc.querySelectorAll(ROW_SELECTOR));
+  const rows = Array.from(doc.querySelectorAll(ROW_SELECTOR)).filter((row) =>
+    /^articleRow\d+$/.test(row.id),
+  );
   if (rows.length === 0) {
-    rows.push(...Array.from(doc.querySelectorAll(ROW_FALLBACK_SELECTOR)));
+    rows.push(
+      ...Array.from(doc.querySelectorAll(ROW_FALLBACK_SELECTOR)).filter((row) =>
+        /^articleRow\d+$/.test(row.id),
+      ),
+    );
   }
 
   const offers: Offer[] = [];
@@ -348,15 +356,46 @@ function parseCondition(row: Element): Condition | null {
 }
 
 function parseLanguage(productAttributes: Element): string | null {
+  const normalize = (label: string): string =>
+    /^english$/i.test(label) ? 'EN' : label;
+
+  // The language icon is the element directly after the condition badge on
+  // both logged-out and logged-in pages. Prefer that relationship so an
+  // expansion, rarity or comment icon can never be mistaken for a language.
+  const condition = productAttributes.querySelector('.article-condition');
+  const conditionSiblingLabel = tooltipText(
+    condition?.nextElementSibling ?? null,
+  );
+  if (conditionSiblingLabel && LANGUAGE_LABELS.has(conditionSiblingLabel)) {
+    return normalize(conditionSiblingLabel);
+  }
+
   for (const icon of productAttributes.querySelectorAll('.icon[aria-label]')) {
     if (icon.classList.contains('expansion-symbol')) continue;
     const label = tooltipText(icon);
-    if (!label) continue;
-    if (FLAG_LABELS.has(label)) continue;
-    return /^english$/i.test(label) ? 'EN' : label;
+    if (!label || !LANGUAGE_LABELS.has(label)) continue;
+    return normalize(label);
   }
   return null;
 }
+
+const LANGUAGE_LABELS = new Set([
+  'English',
+  'French',
+  'German',
+  'Spanish',
+  'Italian',
+  'Simplified Chinese',
+  'Japanese',
+  'Portuguese',
+  'Russian',
+  'Korean',
+  'Traditional Chinese',
+  'Dutch',
+  'Polish',
+  'Czech',
+  'Hungarian',
+]);
 
 const FLAG_LABELS = new Set([
   'Foil',

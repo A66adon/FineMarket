@@ -336,6 +336,23 @@ describe('parseCardmarketPage: metaproduct fixture', () => {
   });
 });
 
+describe('parseCardmarketPage: logged-in row markup', () => {
+  it('finds rows that have the row class but not article-row', () => {
+    const doc = new DOMParser().parseFromString(productHtml, 'text/html');
+    for (const row of doc.querySelectorAll('.article-row')) {
+      row.classList.remove('article-row');
+    }
+
+    const page = parseCardmarketPage(
+      doc.documentElement.outerHTML,
+      PRODUCT_BASE,
+      makeWant({ finish: 'foil', allowAnyFinish: false }),
+    );
+
+    expect(page.offers.length).toBe(50);
+  });
+});
+
 describe('parseCardmarketPage: logged-in quantity fallback', () => {
   it('uses the amount input max when the item-count badge is absent', () => {
     const doc = new DOMParser().parseFromString(productHtml, 'text/html');
